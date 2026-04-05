@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YieldSage - Roadmap & Architecture</title>
+<style>
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: #1e293b;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #6366f1;
+    --accent-glow: rgba(99, 102, 241, 0.15);
+    --green: #22c55e;
+    --green-dim: rgba(34, 197, 94, 0.12);
+    --yellow: #eab308;
+    --yellow-dim: rgba(234, 179, 8, 0.12);
+    --orange: #f97316;
+    --orange-dim: rgba(249, 115, 22, 0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239, 68, 68, 0.12);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59, 130, 246, 0.12);
+    --purple: #a855f7;
+    --purple-dim: rgba(168, 85, 247, 0.12);
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(99,102,241,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #e2e8f0, #a5b4fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .header-badges {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .badge-live { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+  .badge-solana { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(168,85,247,0.25); }
+  .badge-cost { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+  .badge-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .badge-live .badge-dot { background: var(--green); animation: pulse 2s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Tabs */
+  .tabs-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 32px;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    min-width: fit-content;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--surface2); }
+  .tab-btn.active { background: var(--accent); color: white; }
+  .tab-btn .tab-cost {
+    font-size: 0.7rem; font-weight: 400; opacity: 0.7; display: block; margin-top: 2px;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Section layout */
+  .section-header {
+    margin-bottom: 32px;
+  }
+  .section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .section-header p { color: var(--text-muted); }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+  .card-desc { color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin-bottom: 16px; }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .tag-done { background: var(--green-dim); color: var(--green); }
+  .tag-planned { background: var(--yellow-dim); color: var(--yellow); }
+  .tag-complex { background: var(--orange-dim); color: var(--orange); }
+  .tag-research { background: var(--purple-dim); color: var(--purple); }
+  .tag-free { background: var(--blue-dim); color: var(--blue); }
+  .tag-paid { background: var(--red-dim); color: var(--red); }
+  .status-done { color: var(--green); }
+  .status-planned { color: var(--yellow); }
+
+  /* Full-width card */
+  .card-full {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .card-full h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .card-full p, .card-full li { color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; }
+  .card-full ul { padding-left: 20px; margin-top: 8px; }
+  .card-full li { margin-bottom: 6px; }
+  .card-full strong { color: var(--text); }
+
+  /* Architecture diagram */
+  .arch-diagram {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .arch-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .arch-box {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: center;
+    min-width: 130px;
+    border: 1px solid;
+  }
+  .arch-green { background: var(--green-dim); border-color: rgba(34,197,94,0.3); color: var(--green); }
+  .arch-blue { background: var(--blue-dim); border-color: rgba(59,130,246,0.3); color: var(--blue); }
+  .arch-purple { background: var(--accent-glow); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+  .arch-yellow { background: var(--yellow-dim); border-color: rgba(234,179,8,0.3); color: var(--yellow); }
+  .arch-orange { background: var(--orange-dim); border-color: rgba(249,115,22,0.3); color: var(--orange); }
+  .arch-arrow {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    margin: 4px 0;
+  }
+  .arch-label {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -28px;
+    top: 20px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid;
+  }
+  .timeline-item.done::before { border-color: var(--green); background: var(--green); }
+  .timeline-item.current::before { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .timeline-item.planned::before { border-color: var(--text-muted); background: transparent; }
+  .timeline-item h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+  .timeline-item p { color: var(--text-muted); font-size: 0.82rem; }
+
+  /* Risk framework table */
+  .risk-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 16px 0;
+    font-size: 0.85rem;
+  }
+  .risk-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+  }
+  .risk-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .risk-table td:first-child { color: var(--text); font-weight: 600; }
+  .risk-table tr:hover td { background: var(--surface2); }
+  .risk-table th:first-child, .risk-table td:first-child { border-radius: 8px 0 0 8px; }
+  .risk-table th:last-child, .risk-table td:last-child { border-radius: 0 8px 8px 0; }
+  .weight-bar {
+    display: inline-block;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--accent);
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+
+  /* Case study */
+  .case-study {
+    background: linear-gradient(135deg, rgba(239,68,68,0.05), rgba(249,115,22,0.05));
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 20px 0;
+  }
+  .case-study h4 {
+    color: var(--red);
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .case-study .signal-grid {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 4px 16px;
+    font-size: 0.82rem;
+    margin-top: 12px;
+  }
+  .case-study .signal-grid .header {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .signal-yes { color: var(--green); font-weight: 600; }
+  .signal-no { color: var(--red); font-weight: 600; }
+  .signal-slow { color: var(--yellow); font-weight: 600; }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .stat-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat-label { color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
+
+  /* Competitor comparison */
+  .comp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .comp-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .comp-item h5 { font-size: 0.85rem; margin-bottom: 4px; }
+  .comp-item p { color: var(--text-muted); font-size: 0.78rem; }
+  .comp-item .comp-tag { font-size: 0.68rem; color: var(--accent); font-weight: 600; }
+
+  /* Discussion box */
+  .discuss {
+    background: var(--accent-glow);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 24px 0;
+  }
+  .discuss h4 {
+    color: #a5b4fc;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .discuss ul { padding-left: 20px; }
+  .discuss li { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 8px; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px 24px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  @media (max-width: 768px) {
+    .header h1 { font-size: 1.8rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .tab-btn { padding: 10px 14px; font-size: 0.8rem; }
+    .tab-btn .tab-cost { display: none; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>YieldSage</h1>
+  <p>Solana DeFi yield advisory &amp; risk monitoring system. Personal tool today, team intelligence tomorrow.</p>
+  <div class="header-badges">
+    <span class="badge badge-live"><span class="badge-dot"></span> Bot Running</span>
+    <span class="badge badge-solana">Solana Focused</span>
+    <span class="badge badge-cost">$0-4/mo current</span>
+  </div>
+</div>
+
+<div class="tabs-container">
+
+  <!-- Tab navigation -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('current')">Current State<span class="tab-cost">Live</span></button>
+    <button class="tab-btn" onclick="switchTab('tier1')">Tier 1: Core Monitoring<span class="tab-cost">$0 - This week</span></button>
+    <button class="tab-btn" onclick="switchTab('tier2')">Tier 2: Real-Time + Team<span class="tab-cost">$0-50/mo</span></button>
+    <button class="tab-btn" onclick="switchTab('tier3')">Tier 3: Deep Intelligence<span class="tab-cost">$50-200/mo</span></button>
+    <button class="tab-btn" onclick="switchTab('discuss')">Discussion<span class="tab-cost">Team input</span></button>
+  </div>
+
+  <!-- ===== CURRENT STATE ===== -->
+  <div id="tab-current" class="tab-panel active">
+    <div class="section-header">
+      <h2>What's Running Today</h2>
+      <p>YieldSage is a Telegram bot that scans Solana DeFi yields, monitors security events, and proposes allocations via AI. Deployed and running on a local machine.</p>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-value">2,720</div><div class="stat-label">Pools Tracked</div></div>
+      <div class="stat-item"><div class="stat-value">48</div><div class="stat-label">Curated Strategies</div></div>
+      <div class="stat-item"><div class="stat-value">16</div><div class="stat-label">X Accounts Monitored</div></div>
+      <div class="stat-item"><div class="stat-value">7</div><div class="stat-label">Bot Commands</div></div>
+      <div class="stat-item"><div class="stat-value">5 min</div><div class="stat-label">Refresh Interval</div></div>
+      <div class="stat-item"><div class="stat-value">$0</div><div class="stat-label">Monthly Cost</div></div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-header">
+          <div><h3>DeFiLlama Pool Scanner</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">Fetches 2,720 Solana pools every 5 min. APY, TVL, 7d/30d trends. Filters memecoins (TVL > $5M, APY < 200%).</div>
+        <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">Free API</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Curated Strategies</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">48 hand-curated stablecoin strategies with risk data (audits, multisig, liquidation risk). 14 matched to DeFiLlama live, 34 scraped from solana-yields.</div>
+        <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">48/48 APY coverage</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>X/Twitter Monitoring</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">Polls 16 accounts (protocols + security researchers) every 5 min. Keyword scoring, dedup, security alert triggers at relevance >= 70.</div>
+        <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-paid">~$1-2/mo</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Crypto News Monitoring</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">Polls crypto news every 10 min. Categorizes as security/regulatory/solana. Alerts on high relevance scores. Filtered to avoid noise.</div>
+        <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">Free API</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>AI Yield Proposals</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">LLM-powered /propose command. Queries live pools + curated strategies + portfolio via tool-calling. Generates allocation with risk analysis.</div>
+        <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">Gemini free tier</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Alert Triggers</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">Yield delta, TVL drop, portfolio concentration, idle capital, security tweets, exploit news. Configurable thresholds. 60 min dedup.</div>
+        <div class="card-tags"><span class="tag tag-done">Live</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Wallet Tracking</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">Helius API fetches SOL + token balances every 15 min. Portfolio analysis with protocol exposure breakdown.</div>
+        <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">Helius free tier</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Solana Yields Scraper</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">Scrapes solana-yields site every 30 min for APYs of 34 strategies not on DeFiLlama (loops, Perena, Exponent, Solomon, etc.).</div>
+        <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">Free</span></div>
+      </div>
+    </div>
+
+    <!-- Architecture -->
+    <div class="card-full">
+      <h3>Current Architecture</h3>
+      <div class="arch-diagram">
+        <div class="arch-label">Data Sources (all free or near-free)</div>
+        <div class="arch-row">
+          <div class="arch-box arch-green">DeFiLlama<br><small>2,720 pools / 5 min</small></div>
+          <div class="arch-box arch-green">Solana Yields<br><small>48 strategies / 30 min</small></div>
+          <div class="arch-box arch-green">TwitterAPI.io<br><small>16 accounts / 5 min</small></div>
+          <div class="arch-box arch-green">News API<br><small>Crypto news / 10 min</small></div>
+          <div class="arch-box arch-green">Helius<br><small>Wallet / 15 min</small></div>
+        </div>
+        <div class="arch-arrow">&darr;</div>
+        <div class="arch-label">Processing</div>
+        <div class="arch-row">
+          <div class="arch-box arch-blue">SQLite Cache</div>
+          <div class="arch-box arch-blue">Trigger Engine<br><small>yield / TVL / security</small></div>
+          <div class="arch-box arch-blue">LLM (Gemini)<br><small>tool-calling</small></div>
+        </div>
+        <div class="arch-arrow">&darr;</div>
+        <div class="arch-label">Output</div>
+        <div class="arch-row">
+          <div class="arch-box arch-purple">Telegram Bot<br><small>7 commands + alerts</small></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- What we'd miss -->
+    <div class="case-study">
+      <h4>&#9888; Case Study: Would We Catch These Exploits?</h4>
+
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:16px;">Two real events that shaped our roadmap: the Resolv USR depeg (March 2026) and the Drift admin key compromise (April 2026, $213M drained in 10 seconds).</p>
+
+      <div class="signal-grid">
+        <div class="header">Signal</div>
+        <div class="header">Resolv (depeg)</div>
+        <div class="header">Drift (admin key)</div>
+
+        <div>TVL drop detection</div>
+        <div class="signal-slow">5 min delay</div>
+        <div class="signal-slow">5 min (too late)</div>
+
+        <div>Twitter security alert</div>
+        <div class="signal-slow">5 min delay</div>
+        <div class="signal-slow">5 min delay</div>
+
+        <div>News alert</div>
+        <div class="signal-slow">10-30 min</div>
+        <div class="signal-slow">10-30 min</div>
+
+        <div>Stablecoin depeg</div>
+        <div class="signal-no">Not implemented</div>
+        <div style="color:var(--text-muted)">N/A</div>
+
+        <div>On-chain parameter change</div>
+        <div style="color:var(--text-muted)">N/A</div>
+        <div class="signal-no">Not implemented</div>
+
+        <div>Large outflow webhook</div>
+        <div class="signal-no">Not implemented</div>
+        <div class="signal-no">Not implemented</div>
+
+        <div>Signal correlation</div>
+        <div class="signal-no">Not implemented</div>
+        <div class="signal-no">Not implemented</div>
+      </div>
+      <p style="color:var(--text-muted); font-size:0.82rem; margin-top:16px;"><strong style="color:var(--yellow);">Bottom line:</strong> We'd alert within ~5 min (useful for "exit related positions"), but too slow for the initial drain. Tiers 1-3 close these gaps.</p>
+    </div>
+  </div>
+
+  <!-- ===== TIER 1 ===== -->
+  <div id="tab-tier1" class="tab-panel">
+    <div class="section-header">
+      <h2>Tier 1: Core Monitoring</h2>
+      <p>Make YieldSage reliable enough to trust. All features use free APIs. Target: this week.</p>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-value">$0</div><div class="stat-label">Monthly Cost</div></div>
+      <div class="stat-item"><div class="stat-value">30s</div><div class="stat-label">Depeg Detection</div></div>
+      <div class="stat-item"><div class="stat-value">5</div><div class="stat-label">New Features</div></div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Depeg Detection</h3></div>
+          <div class="card-icon" style="background:var(--red-dim);color:var(--red);">&#9888;</div>
+        </div>
+        <div class="card-desc">
+          Poll Jupiter Price API every 30s for all major stablecoins (USDC, USDT, USDS, PYUSD, USR, UXD, USDH). Alert on deviations: >0.5% warning, >2% critical, >5% emergency.
+          <br><br>
+          <strong>Resolv scenario:</strong> USR depeg to $0.97 would trigger within 30 seconds, not 5 minutes.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">Jupiter API - Free</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Correlator Engine</h3></div>
+          <div class="card-icon" style="background:var(--purple-dim);color:var(--purple);">&#8644;</div>
+        </div>
+        <div class="card-desc">
+          Cross-reference signals from all sources. 1 signal alone = info. 2 concordant signals = warning. 3+ = critical alert.
+          <br><br>
+          <strong>Example:</strong> tweet "hack" + TVL drop 50% + depeg = confirmed incident. Window: 30 min. Eliminates false positives.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">Most complex</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Self-Health Monitoring</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9829;</div>
+        </div>
+        <div class="card-desc">
+          Hourly heartbeat message to Telegram. Source health dashboard in /status (last success, error rate, latency). Alert if 3 consecutive failures on a critical source.
+          <br><br>
+          <strong>Problem solved:</strong> If the bot crashes at 3 AM and Resolv happens at 4 AM, you'd know it's down.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">No new deps</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Stale Data Alerts</h3></div>
+          <div class="card-icon" style="background:var(--yellow-dim);color:var(--yellow);">&#9888;</div>
+        </div>
+        <div class="card-desc">
+          If DeFiLlama hasn't responded in 10 min (2x interval), alert "stale data". If 25 min (5x), alert "monitoring degraded".
+          <br><br>
+          <strong>Problem solved:</strong> Without this, a data source outage = silent blindness. Triggers compare stale snapshots and never fire.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">Quick win</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Yield Sustainability Flags</h3></div>
+          <div class="card-icon" style="background:var(--yellow-dim);color:var(--yellow);">&#9733;</div>
+        </div>
+        <div class="card-desc">
+          Auto-flag strategies based on yield source. >50% incentivized = "potentially non-durable". APY >15% = "compensating high risk". APY >30% = "extreme, typically leveraged".
+          <br><br>
+          <strong>Industry consensus:</strong> 3-8% APY = safe zone from real economic activity. Above = risk premium.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">Logic only</span></div>
+      </div>
+    </div>
+
+    <!-- Implementation order -->
+    <div class="card-full">
+      <h3>Implementation Order</h3>
+      <div class="timeline">
+        <div class="timeline-item current">
+          <h4>1. Depeg Detection</h4>
+          <p>Highest immediate value. Covers Resolv-type events. Jupiter Price API, 30s polling, new source module.</p>
+        </div>
+        <div class="timeline-item planned">
+          <h4>2. Stale Data Alerts</h4>
+          <p>Quick to implement. Critical for trust. Check source freshness before trigger evaluation.</p>
+        </div>
+        <div class="timeline-item planned">
+          <h4>3. Yield Sustainability Flags</h4>
+          <p>Logic-only change on existing data. Enriches /strategies and /propose outputs.</p>
+        </div>
+        <div class="timeline-item planned">
+          <h4>4. Self-Health Monitoring</h4>
+          <p>Heartbeat job + enhanced /status. Peace of mind for overnight running.</p>
+        </div>
+        <div class="timeline-item planned">
+          <h4>5. Correlator Engine</h4>
+          <p>Most complex. Cross-references all signals. Eliminates false positives, confirms real incidents.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TIER 2 ===== -->
+  <div id="tab-tier2" class="tab-panel">
+    <div class="section-header">
+      <h2>Tier 2: Real-Time Monitoring + Team Features</h2>
+      <p>From personal bot to team-grade monitoring tool. Sub-second alerts, Slack integration, data redundancy. Some features may require paid tiers.</p>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-value">$0-50</div><div class="stat-label">Monthly Cost</div></div>
+      <div class="stat-item"><div class="stat-value">&lt;1s</div><div class="stat-label">Webhook Latency</div></div>
+      <div class="stat-item"><div class="stat-value">6</div><div class="stat-label">New Features</div></div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Helius Webhooks (Large Outflows)</h3></div>
+          <div class="card-icon" style="background:var(--red-dim);color:var(--red);">&#9889;</div>
+        </div>
+        <div class="card-desc">
+          Sub-second alerts when >$500K exits a vault. Webhooks on program IDs: Drift, Kamino Lending, Kamino Liquidity, Marginfi, Jupiter Lend, Orca, etc.
+          <br><br>
+          <strong>Drift scenario:</strong> $213M outflow detected in &lt;1 second - before Twitter even reacts.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">Needs HTTP server</span><span class="tag tag-paid">Helius $49/mo?</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Protocol Parameter Detection</h3></div>
+          <div class="card-icon" style="background:var(--orange-dim);color:var(--orange);">&#128270;</div>
+        </div>
+        <div class="card-desc">
+          Monitor admin transactions on major protocols. Detect: market creation, oracle changes, circuit breaker modifications, authority transfers. Flag unusual timing (3 AM) or amplitude (20x).
+          <br><br>
+          <strong>Drift scenario:</strong> The fake CVT market creation + circuit breaker lift were visible on-chain BEFORE the drain.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">High complexity</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Multi-Destination Alerts</h3></div>
+          <div class="card-icon" style="background:var(--blue-dim);color:var(--blue);">&#128490;</div>
+        </div>
+        <div class="card-desc">
+          Alert dispatcher: Telegram (personal) + Slack (team) + custom webhook. Severity filtering: only warning/critical go to Slack. Team-wide visibility for AllezLabs.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">Slack webhooks free</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Redundant Data Sources</h3></div>
+          <div class="card-icon" style="background:var(--blue-dim);color:var(--blue);">&#128260;</div>
+        </div>
+        <div class="card-desc">
+          Primary + backup for every critical data source. DeFiLlama fails? Fall back to protocol APIs. Jupiter fails? Fall back to Pyth oracle. Auto-switch on 2 consecutive failures.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">Free APIs as backup</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Utilization Rate Monitoring</h3></div>
+          <div class="card-icon" style="background:var(--yellow-dim);color:var(--yellow);">&#128200;</div>
+        </div>
+        <div class="card-desc">
+          Track lending pool utilization (borrow/supply ratio). Alert at >90% (withdrawals at risk). During Resolv, vaults hit 99%+ utilization before users realized.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">Protocol-specific</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Curated Data Enrichment</h3></div>
+          <div class="card-icon" style="background:var(--purple-dim);color:var(--purple);">&#128218;</div>
+        </div>
+        <div class="card-desc">
+          Add missing risk dimensions to all 48 strategies: protocol age, exit mechanism, oracle type, audit freshness, timelock, open source status. Research task (~2-3h), no code.
+        </div>
+        <div class="card-tags"><span class="tag tag-research">Research</span><span class="tag tag-free">No cost</span></div>
+      </div>
+    </div>
+
+    <!-- Architecture evolution -->
+    <div class="card-full">
+      <h3>Architecture Evolution</h3>
+      <div class="arch-diagram">
+        <div class="arch-label">Data Sources (expanded)</div>
+        <div class="arch-row">
+          <div class="arch-box arch-green">DeFiLlama</div>
+          <div class="arch-box arch-green">Solana Yields</div>
+          <div class="arch-box arch-green">Twitter</div>
+          <div class="arch-box arch-green">News</div>
+          <div class="arch-box arch-green">Helius</div>
+          <div class="arch-box arch-orange">Helius Webhooks<br><small>NEW - sub-second</small></div>
+          <div class="arch-box arch-orange">Protocol Watchers<br><small>NEW - admin txs</small></div>
+        </div>
+        <div class="arch-arrow">&darr;</div>
+        <div class="arch-label">Processing (enhanced)</div>
+        <div class="arch-row">
+          <div class="arch-box arch-blue">SQLite + Fallback Sources</div>
+          <div class="arch-box arch-blue">Trigger Engine</div>
+          <div class="arch-box arch-blue">Correlator</div>
+          <div class="arch-box arch-blue">LLM (Gemini)</div>
+        </div>
+        <div class="arch-arrow">&darr;</div>
+        <div class="arch-label">Output (multi-destination)</div>
+        <div class="arch-row">
+          <div class="arch-box arch-purple">Telegram</div>
+          <div class="arch-box arch-orange">Slack<br><small>NEW - team</small></div>
+          <div class="arch-box arch-orange">Webhooks<br><small>NEW - custom</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TIER 3 ===== -->
+  <div id="tab-tier3" class="tab-panel">
+    <div class="section-header">
+      <h2>Tier 3: Deep Protocol Intelligence</h2>
+      <p>From alert dashboard to DeFi risk management system. Protocol-specific adapters, multisig monitoring, exploit pattern detection, and industry-standard risk scoring.</p>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-value">$50-200</div><div class="stat-label">Monthly Cost</div></div>
+      <div class="stat-item"><div class="stat-value">6</div><div class="stat-label">Dimensions</div></div>
+      <div class="stat-item"><div class="stat-value">6</div><div class="stat-label">New Features</div></div>
+    </div>
+
+    <!-- Risk Framework -->
+    <div class="card-full">
+      <h3>Risk Score Framework (Industry Consensus)</h3>
+      <p style="margin-bottom:16px;">Based on analysis of methodologies from vaults.fyi, Exponential.fi, Gauntlet, Chaos Labs, Credora, DeFi Safety, and the EEA. All converge on the same 6 dimensions.</p>
+
+      <table class="risk-table">
+        <tr>
+          <th>Dimension</th>
+          <th>Weight</th>
+          <th>What We Measure</th>
+          <th>Current Coverage</th>
+        </tr>
+        <tr>
+          <td>Time &amp; Survival</td>
+          <td>20% <span class="weight-bar" style="width:60px;"></span></td>
+          <td>Protocol age, peak TVL, survived stress events (UST, FTX), incident history</td>
+          <td style="color:var(--red);">Not covered</td>
+        </tr>
+        <tr>
+          <td>Dependency &amp; Composability</td>
+          <td>15% <span class="weight-bar" style="width:45px;"></span></td>
+          <td>Number of protocols involved, dependency graph, correlation between collaterals</td>
+          <td style="color:var(--yellow);">Partial (category)</td>
+        </tr>
+        <tr>
+          <td>Liquidity &amp; Exit</td>
+          <td>15% <span class="weight-bar" style="width:45px;"></span></td>
+          <td>Exit mechanism (instant/FIFO/lockup), secondary market, $1M exit slippage</td>
+          <td style="color:var(--yellow);">Partial (lockup_days)</td>
+        </tr>
+        <tr>
+          <td>Oracle Integrity</td>
+          <td>15% <span class="weight-bar" style="width:45px;"></span></td>
+          <td>Oracle type (Pyth/Switchboard/custom), decentralization, fallback mechanism</td>
+          <td style="color:var(--red);">Not covered</td>
+        </tr>
+        <tr>
+          <td>Audit &amp; OpSec</td>
+          <td>15% <span class="weight-bar" style="width:45px;"></span></td>
+          <td>Audit count &amp; quality, freshness, multisig setup, timelock, open source</td>
+          <td style="color:var(--green);">Mostly covered</td>
+        </tr>
+        <tr>
+          <td>Yield Source</td>
+          <td>20% <span class="weight-bar" style="width:60px;"></span></td>
+          <td>Real yield vs incentives ratio, yield classification, sustainability zone</td>
+          <td style="color:var(--yellow);">Partial (base/incentive %)</td>
+        </tr>
+      </table>
+
+      <p style="margin-top:16px; font-size:0.85rem; color:var(--text-muted);">Score: 0-100 per dimension, weighted sum for final score. This aligns with the call for "L2Beat but for DeFi risk" - a public, transparent standard.</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Protocol-Specific Deep Monitoring</h3></div>
+          <div class="card-icon" style="background:var(--orange-dim);color:var(--orange);">&#128269;</div>
+        </div>
+        <div class="card-desc">
+          Custom adapters for each protocol: parse on-chain instructions (Anchor IDL), detect parameter changes, flag anomalies. Start with Drift + Kamino, then Marginfi, Jupiter Lend.
+          <br><br>
+          Red flags: market created with IMF=0, circuit breakers lifted >5x, oracle changed to unknown feed, LTV above 90%.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">Very high complexity</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Multisig Activity Watcher</h3></div>
+          <div class="card-icon" style="background:var(--red-dim);color:var(--red);">&#128272;</div>
+        </div>
+        <div class="card-desc">
+          Monitor Squads multisig transactions for major protocols. Score by: time of day (3 AM = red flag), threshold changes (3/5 to 2/5 = critical), burst activity (&lt;1 min between txs = critical).
+          <br><br>
+          Would have caught the Drift compromised admin key if the attacker used the multisig.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-research">Needs address research</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Historical Pattern Detection</h3></div>
+          <div class="card-icon" style="background:var(--purple-dim);color:var(--purple);">&#128202;</div>
+        </div>
+        <div class="card-desc">
+          Catalog known exploit patterns: admin key compromise (Drift 2026), oracle manipulation (Mango 2022), gradual depeg (Resolv 2026, UST 2022), flash loan (Euler 2023). Match incoming signals to patterns.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">Needs tuning</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Cross-Protocol Dependency Graph</h3></div>
+          <div class="card-icon" style="background:var(--blue-dim);color:var(--blue);">&#128279;</div>
+        </div>
+        <div class="card-desc">
+          Map protocol dependencies: Kamino &rarr; Pyth (oracle), Loopscale &rarr; Kamino (lending), Drift &rarr; Pyth (oracle). When Pyth has an issue, auto-identify all downstream protocols at risk.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">JSON config + logic</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Automated Incident Reports</h3></div>
+          <div class="card-icon" style="background:var(--yellow-dim);color:var(--yellow);">&#128196;</div>
+        </div>
+        <div class="card-desc">
+          When correlator detects "critical" threat: auto-generate a structured report with timeline, impacted protocols (direct + dependencies), our exposure, recommended actions. LLM-powered, sent to Slack + Telegram.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-paid">LLM cost</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Risk Score Engine</h3></div>
+          <div class="card-icon" style="background:var(--accent-glow);color:#a5b4fc;">&#127919;</div>
+        </div>
+        <div class="card-desc">
+          Quantitative scoring across 6 dimensions. 0-100 per dimension, weighted composite. New /risk command for detailed protocol breakdown. Feeds into /strategies and /propose.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-research">Needs data enrichment</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DISCUSSION ===== -->
+  <div id="tab-discuss" class="tab-panel">
+    <div class="section-header">
+      <h2>Discussion & Open Questions</h2>
+      <p>Topics for team brainstorming. What's missing? What should we prioritize?</p>
+    </div>
+
+    <div class="discuss">
+      <h4>For the Team</h4>
+      <ul>
+        <li><strong>Scope:</strong> Should this be AllezLabs-internal only, or could the risk framework become a public product (the "L2Beat for Solana DeFi risk" that the industry is asking for)?</li>
+        <li><strong>Budget:</strong> Tier 1 is $0, Tier 2 is $0-50/mo, Tier 3 is $50-200/mo. What's the budget we're comfortable with?</li>
+        <li><strong>Deployment:</strong> Currently runs on a local machine. For team use, we need a server (cloud VM, or Modal for serverless?). What's the preferred infra?</li>
+        <li><strong>Protocol priority:</strong> Which protocols should we deep-monitor first? (Kamino seems obvious for AllezLabs, but Drift post-exploit is the best-documented)</li>
+        <li><strong>Alert destination:</strong> Dedicated Slack channel? Who should receive critical alerts? On-call rotation?</li>
+        <li><strong>Integration with existing tools:</strong> Does this replace any current monitoring, or complement it? Any overlap with Chaos Labs/Gauntlet dashboards we already use?</li>
+      </ul>
+    </div>
+
+    <div class="discuss">
+      <h4>Missing Features We Haven't Thought Of?</h4>
+      <ul>
+        <li><strong>Governance monitoring:</strong> Track on-chain governance proposals that could change risk parameters</li>
+        <li><strong>Insurance integration:</strong> Flag whether a strategy has cover available (Nexus Mutual, InsurAce)</li>
+        <li><strong>Historical APY tracking:</strong> "This pool was at 20% APY last week, now 5% - is that normal or a red flag?"</li>
+        <li><strong>Portfolio simulation:</strong> "If I put $100K in this allocation, what's my worst-case 30-day scenario?"</li>
+        <li><strong>Competitive intelligence:</strong> Track what vaults competitors are integrating or launching</li>
+        <li><strong>Regulatory watch:</strong> Better filtering for regulations that actually impact Solana DeFi specifically</li>
+        <li><strong>Whale tracking:</strong> Monitor large wallets (known funds, teams) for position changes as signals</li>
+      </ul>
+    </div>
+
+    <!-- Competitors -->
+    <div class="card-full">
+      <h3>Competitive Landscape</h3>
+      <div class="comp-grid">
+        <div class="comp-item">
+          <h5>vaults.fyi</h5>
+          <p>Vault discovery + reputation score. EVM only, no Solana.</p>
+          <div class="comp-tag">EVM | Static scoring</div>
+        </div>
+        <div class="comp-item">
+          <h5>Zyf.ai</h5>
+          <p>Autonomous yield agents. Auto-rebalance. Caught Resolv.</p>
+          <div class="comp-tag">EVM | Execution | Paid</div>
+        </div>
+        <div class="comp-item">
+          <h5>Exponential.fi</h5>
+          <p>DeFi Graph + risk scoring. Great research, EVM focused.</p>
+          <div class="comp-tag">EVM | Rating agency</div>
+        </div>
+        <div class="comp-item">
+          <h5>The Hive</h5>
+          <p>Multi-agent Solana yield. Launching, execution-focused.</p>
+          <div class="comp-tag">Solana | Execution | New</div>
+        </div>
+        <div class="comp-item">
+          <h5>Lulo</h5>
+          <p>Lending optimizer for Solana. Narrow scope (lending only).</p>
+          <div class="comp-tag">Solana | Lending only</div>
+        </div>
+        <div class="comp-item">
+          <h5>@yieldcompass</h5>
+          <p>Risk framework for Solana. Very early stage.</p>
+          <div class="comp-tag">Solana | Early | Risk focus</div>
+        </div>
+      </div>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-top:16px;"><strong>Our unique angle:</strong> Solana-focused + real-time monitoring + static risk scoring + AI advisory. Nobody combines all four on Solana today.</p>
+    </div>
+
+    <div class="card-full">
+      <h3>Cost Summary</h3>
+      <table class="risk-table">
+        <tr><th>Tier</th><th>Timeline</th><th>Cost</th><th>What It Enables</th></tr>
+        <tr><td>Current</td><td>Running now</td><td>$0-4/mo</td><td>Pool scanning, curated strategies, Twitter/news monitoring, AI proposals, basic alerts</td></tr>
+        <tr><td>Tier 1</td><td>This week</td><td>$0/mo</td><td>Depeg detection, signal correlation, self-health, stale data alerts, yield flags</td></tr>
+        <tr><td>Tier 2</td><td>Next week</td><td>$0-50/mo</td><td>Sub-second alerts, Slack for team, data redundancy, utilization monitoring, enriched risk data</td></tr>
+        <tr><td>Tier 3</td><td>Medium term</td><td>$50-200/mo</td><td>Protocol adapters, multisig watcher, exploit patterns, risk scoring engine, incident reports</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  YieldSage &mdash; AllezLabs Engineering &mdash; April 2026<br>
+  Built with Python, Telegram Bot API, DeFiLlama, Jupiter, Helius, Gemini
+</div>
+
+<script>
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+
+</body>
+</html>
