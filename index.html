@@ -751,7 +751,7 @@
     <div class="stats-bar">
       <div class="stat-item"><div class="stat-value">$0-50</div><div class="stat-label">Monthly Cost</div></div>
       <div class="stat-item"><div class="stat-value">&lt;1s</div><div class="stat-label">Webhook Latency</div></div>
-      <div class="stat-item"><div class="stat-value">6</div><div class="stat-label">New Features</div></div>
+      <div class="stat-item"><div class="stat-value">8</div><div class="stat-label">New Features</div></div>
     </div>
 
     <div class="card-grid">
@@ -816,6 +816,32 @@
 
       <div class="card">
         <div class="card-header">
+          <div><h3>Dune SIM Integration</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9889;</div>
+        </div>
+        <div class="card-desc">
+          Dune SIM Solana API: real-time balances + transactions, 500k events/mo free. Replaces Helius paid tier for outflow detection. Poll vault transactions every 30s, filter transfers > $500K. Backup data source for wallet balances.
+          <br><br>
+          <strong>Budget impact:</strong> Could eliminate the need for Helius Starter ($49/mo).
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">500k events free</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Protocol Health Dashboard</h3></div>
+          <div class="card-icon" style="background:var(--orange-dim);color:var(--orange);">&#128200;</div>
+        </div>
+        <div class="card-desc">
+          Inspired by Nomad Analyst's platform. Monitor lending markets in depth: utilization per reserve, health factor distribution, borrow rate curve position, collateral vs loan ratios. Alert when markets approach stress thresholds.
+          <br><br>
+          <strong>New command:</strong> <code>/health</code> for lending market overview.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">Medium-High</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
           <div><h3>Curated Data Enrichment</h3></div>
           <div class="card-icon" style="background:var(--purple-dim);color:var(--purple);">&#128218;</div>
         </div>
@@ -837,7 +863,8 @@
           <div class="arch-box arch-green">Twitter</div>
           <div class="arch-box arch-green">News</div>
           <div class="arch-box arch-green">Helius</div>
-          <div class="arch-box arch-orange">Helius Webhooks<br><small>NEW - sub-second</small></div>
+          <div class="arch-box arch-orange">Dune SIM<br><small>NEW - 500k free</small></div>
+          <div class="arch-box arch-orange">Helius Webhooks<br><small>sub-second (if needed)</small></div>
           <div class="arch-box arch-orange">Protocol Watchers<br><small>NEW - admin txs</small></div>
         </div>
         <div class="arch-arrow">&darr;</div>
@@ -869,7 +896,7 @@
     <div class="stats-bar">
       <div class="stat-item"><div class="stat-value">$50-200</div><div class="stat-label">Monthly Cost</div></div>
       <div class="stat-item"><div class="stat-value">6</div><div class="stat-label">Dimensions</div></div>
-      <div class="stat-item"><div class="stat-value">6</div><div class="stat-label">New Features</div></div>
+      <div class="stat-item"><div class="stat-value">7</div><div class="stat-label">New Features</div></div>
     </div>
 
     <!-- Risk Framework -->
@@ -995,6 +1022,20 @@
         </div>
         <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-research">Needs data enrichment</span></div>
       </div>
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Lending Market Deep Analytics</h3></div>
+          <div class="card-icon" style="background:var(--orange-dim);color:var(--orange);">&#128202;</div>
+        </div>
+        <div class="card-desc">
+          Beyond basic utilization: health factor distributions (% of positions near liquidation), borrow rate curve monitoring (detect kink point approach), debt capacity tracking, liquidation cascade simulation.
+          <br><br>
+          <strong>Example:</strong> "If SOL drops below $120, 15% of Kamino positions ($45M) will be liquidated." Powered by Dune SIM + on-chain data.
+          <br><br>
+          Inspired by <a href="https://demo.rmckinley.net" style="color:var(--accent);">Nomad Analyst's platform</a>.
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">Very high complexity</span></div>
+      </div>
     </div>
   </div>
 
@@ -1027,6 +1068,8 @@
         <li><strong>Competitive intelligence:</strong> Track what vaults competitors are integrating or launching</li>
         <li><strong>Regulatory watch:</strong> Better filtering for regulations that actually impact Solana DeFi specifically</li>
         <li><strong>Whale tracking:</strong> Monitor large wallets (known funds, teams) for position changes as signals</li>
+        <li><strong>Dune SIM deep integration:</strong> Beyond balances/txs - use Dune Analytics SQL queries for historical trends, cross-protocol analytics, on-chain decoded data</li>
+        <li><strong>Visual dashboard:</strong> Nomad Analyst-style web dashboard (not just Telegram) for lending market health, utilization curves, health factor distributions</li>
       </ul>
     </div>
 
@@ -1074,7 +1117,7 @@
         <tr><th>Tier</th><th>Timeline</th><th>Cost</th><th>What It Enables</th></tr>
         <tr><td>Current</td><td>Running now</td><td>$0-4/mo</td><td>Pool scanning, curated strategies, Twitter/news monitoring, AI proposals, basic alerts</td></tr>
         <tr><td>Tier 1</td><td>This week</td><td>$0/mo</td><td>Depeg detection, signal correlation, self-health, stale data alerts, yield flags</td></tr>
-        <tr><td>Tier 2</td><td>Next week</td><td>$0-50/mo</td><td>Sub-second alerts, Slack for team, data redundancy, utilization monitoring, enriched risk data</td></tr>
+        <tr><td>Tier 2</td><td>Next week</td><td>$0-50/mo</td><td>Dune SIM integration, Slack for team, data redundancy, utilization monitoring, protocol health dashboard, enriched risk data</td></tr>
         <tr><td>Tier 3</td><td>Medium term</td><td>$50-200/mo</td><td>Protocol adapters, multisig watcher, exploit patterns, risk scoring engine, incident reports</td></tr>
       </table>
     </div>
