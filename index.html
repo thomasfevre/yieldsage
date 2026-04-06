@@ -484,7 +484,8 @@
       <div class="stat-item"><div class="stat-value">2,720</div><div class="stat-label">Pools Tracked</div></div>
       <div class="stat-item"><div class="stat-value">48</div><div class="stat-label">Curated Strategies</div></div>
       <div class="stat-item"><div class="stat-value">16</div><div class="stat-label">X Accounts Monitored</div></div>
-      <div class="stat-item"><div class="stat-value">7</div><div class="stat-label">Bot Commands</div></div>
+      <div class="stat-item"><div class="stat-value">8</div><div class="stat-label">Bot Commands</div></div>
+      <div class="stat-item"><div class="stat-value">13</div><div class="stat-label">Stablecoins Monitored</div></div>
       <div class="stat-item"><div class="stat-value">5 min</div><div class="stat-label">Refresh Interval</div></div>
       <div class="stat-item"><div class="stat-value">$0</div><div class="stat-label">Monthly Cost</div></div>
     </div>
@@ -540,7 +541,7 @@
           <div><h3>Alert Triggers</h3></div>
           <div class="card-icon arch-green">&#9679;</div>
         </div>
-        <div class="card-desc">Yield delta, TVL drop, portfolio concentration, idle capital, security tweets, exploit news. Configurable thresholds. 60 min dedup.</div>
+        <div class="card-desc">Yield delta, TVL drop, portfolio concentration, idle capital, security tweets, exploit news. Yield sustainability flags. Telegram auth on all commands. Persisted alert thresholds (survive restarts). 60 min dedup.</div>
         <div class="card-tags"><span class="tag tag-done">Live</span></div>
       </div>
 
@@ -561,6 +562,33 @@
         <div class="card-desc">Scrapes solana-yields site every 30 min for APYs of 34 strategies not on DeFiLlama (loops, Perena, Exponent, Solomon, etc.).</div>
         <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">Free</span></div>
       </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>ClickHouse Integration</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">Queries AllezLabs ClickHouse for Kamino lending data: volumes, liquidations, markets. <code>/kamino</code> command. Stores APY snapshots hourly + price history + alert history for long-term analytics.</div>
+        <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">Internal infra</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Depeg Detection</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">Monitors 13 stablecoins (11 standard + 2 yield-bearing) via Jupiter API primary / CoinGecko fallback, every 30 seconds. Warning at 0.3%, critical at 2%.</div>
+        <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">Free APIs</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Self-Health Monitoring</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">Hourly heartbeat message to Telegram. Stale data detection for all 6 sources. Source health visible in <code>/status</code>. Alert if sources go offline.</div>
+        <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">No new deps</span></div>
+      </div>
     </div>
 
     <!-- Architecture -->
@@ -574,18 +602,20 @@
           <div class="arch-box arch-green">TwitterAPI.io<br><small>16 accounts / 5 min</small></div>
           <div class="arch-box arch-green">News API<br><small>Crypto news / 10 min</small></div>
           <div class="arch-box arch-green">Helius<br><small>Wallet / 15 min</small></div>
+          <div class="arch-box arch-green">Jupiter Prices<br><small>13 stablecoins / 30s</small></div>
         </div>
         <div class="arch-arrow">&darr;</div>
         <div class="arch-label">Processing</div>
         <div class="arch-row">
           <div class="arch-box arch-blue">SQLite Cache</div>
-          <div class="arch-box arch-blue">Trigger Engine<br><small>yield / TVL / security</small></div>
+          <div class="arch-box arch-blue">Trigger Engine<br><small>yield / TVL / depeg / security</small></div>
           <div class="arch-box arch-blue">LLM (Gemini)<br><small>tool-calling</small></div>
+          <div class="arch-box arch-blue">ClickHouse Write<br><small>APY / prices / alerts</small></div>
         </div>
         <div class="arch-arrow">&darr;</div>
         <div class="arch-label">Output</div>
         <div class="arch-row">
-          <div class="arch-box arch-purple">Telegram Bot<br><small>7 commands + alerts</small></div>
+          <div class="arch-box arch-purple">2 Telegram Bots<br><small>8 commands + alerts</small></div>
         </div>
       </div>
     </div>
@@ -614,7 +644,7 @@
         <div class="signal-slow">10-30 min</div>
 
         <div>Stablecoin depeg</div>
-        <div class="signal-no">Not implemented</div>
+        <div class="signal-yes">30s detection</div>
         <div style="color:var(--text-muted)">N/A</div>
 
         <div>On-chain parameter change</div>
@@ -643,21 +673,21 @@
     <div class="stats-bar">
       <div class="stat-item"><div class="stat-value">$0</div><div class="stat-label">Monthly Cost</div></div>
       <div class="stat-item"><div class="stat-value">30s</div><div class="stat-label">Depeg Detection</div></div>
-      <div class="stat-item"><div class="stat-value">5</div><div class="stat-label">New Features</div></div>
+      <div class="stat-item"><div class="stat-value">4/5</div><div class="stat-label">Features Done</div></div>
     </div>
 
     <div class="card-grid">
       <div class="card">
         <div class="card-header">
           <div><h3>Depeg Detection</h3></div>
-          <div class="card-icon" style="background:var(--red-dim);color:var(--red);">&#9888;</div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
-          Poll Jupiter Price API every 30s for all major stablecoins (USDC, USDT, USDS, PYUSD, USR, UXD, USDH). Alert on deviations: >0.5% warning, >2% critical, >5% emergency.
+          Monitors 13 stablecoins (11 standard + 2 yield-bearing) via Jupiter API primary / CoinGecko fallback, every 30s. Warning at 0.3%, critical at 2%.
           <br><br>
           <strong>Resolv scenario:</strong> USR depeg to $0.97 would trigger within 30 seconds, not 5 minutes.
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">Jupiter API - Free</span></div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">Jupiter API - Free</span></div>
       </div>
 
       <div class="card">
@@ -676,40 +706,40 @@
       <div class="card">
         <div class="card-header">
           <div><h3>Self-Health Monitoring</h3></div>
-          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9829;</div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
-          Hourly heartbeat message to Telegram. Source health dashboard in /status (last success, error rate, latency). Alert if 3 consecutive failures on a critical source.
+          Hourly heartbeat message to Telegram. Stale data detection for all 6 sources. Source health in /status. Alert if sources go offline.
           <br><br>
           <strong>Problem solved:</strong> If the bot crashes at 3 AM and Resolv happens at 4 AM, you'd know it's down.
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">No new deps</span></div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">No new deps</span></div>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div><h3>Stale Data Alerts</h3></div>
-          <div class="card-icon" style="background:var(--yellow-dim);color:var(--yellow);">&#9888;</div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
-          If DeFiLlama hasn't responded in 10 min (2x interval), alert "stale data". If 25 min (5x), alert "monitoring degraded".
+          Detects stale data for all 6 sources. Alert on 2x expected interval ("stale"), 5x ("monitoring degraded"). Integrated with self-health monitoring.
           <br><br>
           <strong>Problem solved:</strong> Without this, a data source outage = silent blindness. Triggers compare stale snapshots and never fire.
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">Quick win</span></div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">Quick win</span></div>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div><h3>Yield Sustainability Flags</h3></div>
-          <div class="card-icon" style="background:var(--yellow-dim);color:var(--yellow);">&#9733;</div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
           Auto-flag strategies based on yield source. >50% incentivized = "potentially non-durable". APY >15% = "compensating high risk". APY >30% = "extreme, typically leveraged".
           <br><br>
           <strong>Industry consensus:</strong> 3-8% APY = safe zone from real economic activity. Above = risk premium.
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">Logic only</span></div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">Logic only</span></div>
       </div>
     </div>
 
@@ -717,23 +747,23 @@
     <div class="card-full">
       <h3>Implementation Order</h3>
       <div class="timeline">
-        <div class="timeline-item current">
+        <div class="timeline-item done">
           <h4>1. Depeg Detection</h4>
-          <p>Highest immediate value. Covers Resolv-type events. Jupiter Price API, 30s polling, new source module.</p>
+          <p>13 stablecoins monitored every 30s. Jupiter primary, CoinGecko fallback. Warning 0.3%, critical 2%.</p>
         </div>
-        <div class="timeline-item planned">
+        <div class="timeline-item done">
           <h4>2. Stale Data Alerts</h4>
-          <p>Quick to implement. Critical for trust. Check source freshness before trigger evaluation.</p>
+          <p>All 6 sources monitored. Alert on 2x/5x expected interval. Integrated with self-health.</p>
         </div>
-        <div class="timeline-item planned">
+        <div class="timeline-item done">
           <h4>3. Yield Sustainability Flags</h4>
           <p>Logic-only change on existing data. Enriches /strategies and /propose outputs.</p>
         </div>
-        <div class="timeline-item planned">
+        <div class="timeline-item done">
           <h4>4. Self-Health Monitoring</h4>
-          <p>Heartbeat job + enhanced /status. Peace of mind for overnight running.</p>
+          <p>Hourly heartbeat + source health in /status. Stale data detection for all sources.</p>
         </div>
-        <div class="timeline-item planned">
+        <div class="timeline-item current">
           <h4>5. Correlator Engine</h4>
           <p>Most complex. Cross-references all signals. Eliminates false positives, confirms real incidents.</p>
         </div>
@@ -794,13 +824,24 @@
 
       <div class="card">
         <div class="card-header">
+          <div><h3>ClickHouse Analytics Pipeline</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
+        </div>
+        <div class="card-desc">
+          APY snapshots hourly, price history, alert history all stored in ClickHouse for long-term analytics. Kamino lending data (volumes, liquidations, markets) via /kamino command. Next step: curator performance tracking.
+        </div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">Internal infra</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
           <div><h3>Redundant Data Sources</h3></div>
           <div class="card-icon" style="background:var(--blue-dim);color:var(--blue);">&#128260;</div>
         </div>
         <div class="card-desc">
-          Primary + backup for every critical data source. DeFiLlama fails? Fall back to protocol APIs. Jupiter fails? Fall back to Pyth oracle. Auto-switch on 2 consecutive failures.
+          Primary + backup for every critical data source. Jupiter + CoinGecko fallback for prices is done. DeFiLlama fails? Fall back to protocol APIs. Auto-switch on 2 consecutive failures.
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">Free APIs as backup</span></div>
+        <div class="card-tags"><span class="tag tag-done">Partial</span><span class="tag tag-free">Free APIs as backup</span></div>
       </div>
 
       <div class="card">
@@ -820,7 +861,7 @@
           <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9889;</div>
         </div>
         <div class="card-desc">
-          Dune SIM Solana API: real-time balances + transactions, 500k events/mo free. Replaces Helius paid tier for outflow detection. Poll vault transactions every 30s, filter transfers > $500K. Backup data source for wallet balances.
+          Dune SIM Solana API: real-time balances + transactions, 500k events/mo free. API key obtained. Replaces Helius paid tier for outflow detection. Poll vault transactions every 30s, filter transfers > $500K. Backup data source for wallet balances.
           <br><br>
           <strong>Budget impact:</strong> Could eliminate the need for Helius Starter ($49/mo).
         </div>
@@ -1059,6 +1100,13 @@
     </div>
 
     <div class="discuss">
+      <h4>Active Discussion</h4>
+      <ul>
+        <li><strong>Curator Performance Tracking:</strong> Data pipeline is in place (hourly APY snapshots in ClickHouse). Next step is building the metrics: Sharpe-like ratio, reaction time during events, rebalance frequency. This would let us objectively compare curator quality over time.</li>
+      </ul>
+    </div>
+
+    <div class="discuss">
       <h4>Missing Features We Haven't Thought Of?</h4>
       <ul>
         <li><strong>Governance monitoring:</strong> Track on-chain governance proposals that could change risk parameters</li>
@@ -1115,8 +1163,8 @@
       <h3>Cost Summary</h3>
       <table class="risk-table">
         <tr><th>Tier</th><th>Timeline</th><th>Cost</th><th>What It Enables</th></tr>
-        <tr><td>Current</td><td>Running now</td><td>$0-4/mo</td><td>Pool scanning, curated strategies, Twitter/news monitoring, AI proposals, basic alerts</td></tr>
-        <tr><td>Tier 1</td><td>This week</td><td>$0/mo</td><td>Depeg detection, signal correlation, self-health, stale data alerts, yield flags</td></tr>
+        <tr><td>Current</td><td>Running now</td><td>$0-4/mo</td><td>Pool scanning, curated strategies, Twitter/news monitoring, AI proposals, alerts, depeg detection, ClickHouse analytics, self-health</td></tr>
+        <tr><td>Tier 1</td><td>4/5 done</td><td>$0/mo</td><td>Depeg detection, stale data alerts, yield flags, self-health (done). Correlator engine (planned).</td></tr>
         <tr><td>Tier 2</td><td>Next week</td><td>$0-50/mo</td><td>Dune SIM integration, Slack for team, data redundancy, utilization monitoring, protocol health dashboard, enriched risk data</td></tr>
         <tr><td>Tier 3</td><td>Medium term</td><td>$50-200/mo</td><td>Protocol adapters, multisig watcher, exploit patterns, risk scoring engine, incident reports</td></tr>
       </table>
@@ -1127,7 +1175,7 @@
 
 <div class="footer">
   YieldSage &mdash; AllezLabs Engineering &mdash; April 2026<br>
-  Built with Python, Telegram Bot API, DeFiLlama, Jupiter, Helius, Gemini
+  Built with Python, Telegram Bot API, DeFiLlama, Jupiter, Helius, Gemini, ClickHouse
 </div>
 
 <script>
