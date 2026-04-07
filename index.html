@@ -484,8 +484,10 @@
       <div class="stat-item"><div class="stat-value">2,720</div><div class="stat-label">Pools Tracked</div></div>
       <div class="stat-item"><div class="stat-value">48</div><div class="stat-label">Curated Strategies</div></div>
       <div class="stat-item"><div class="stat-value">16</div><div class="stat-label">X Accounts Monitored</div></div>
-      <div class="stat-item"><div class="stat-value">8</div><div class="stat-label">Bot Commands</div></div>
+      <div class="stat-item"><div class="stat-value">9</div><div class="stat-label">Bot Commands</div></div>
       <div class="stat-item"><div class="stat-value">13</div><div class="stat-label">Stablecoins Monitored</div></div>
+      <div class="stat-item"><div class="stat-value">64</div><div class="stat-label">Stablecoin MCaps</div></div>
+      <div class="stat-item"><div class="stat-value">Live</div><div class="stat-label">Lending Rates</div></div>
       <div class="stat-item"><div class="stat-value">5 min</div><div class="stat-label">Refresh Interval</div></div>
       <div class="stat-item"><div class="stat-value">$0</div><div class="stat-label">Monthly Cost</div></div>
     </div>
@@ -568,7 +570,7 @@
           <div><h3>ClickHouse Integration</h3></div>
           <div class="card-icon arch-green">&#9679;</div>
         </div>
-        <div class="card-desc">Queries AllezLabs ClickHouse for Kamino lending data: volumes, liquidations, markets. <code>/kamino</code> command. Stores APY snapshots hourly + price history + alert history for long-term analytics.</div>
+        <div class="card-desc">Queries AllezLabs ClickHouse for Kamino lending data: volumes, liquidations, markets. <code>/kamino</code> command. Now stores 8 data types: APY snapshots (hourly), stablecoin prices (30s), alert history, lending rates (5 min), stablecoin mcap (5 min), protocol TVL (daily), protocol fees (daily), DEX volume (daily). 8 ClickHouse tables total.</div>
         <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">Internal infra</span></div>
       </div>
 
@@ -579,6 +581,15 @@
         </div>
         <div class="card-desc">Monitors 13 stablecoins (11 standard + 2 yield-bearing) via Jupiter API primary / CoinGecko fallback, every 30 seconds. Warning at 0.3%, critical at 2%.</div>
         <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">Free APIs</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>DeFiLlama Extended Data</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">6 new DeFiLlama endpoints ingested every 5 min to daily. Lending rates with utilization %, stablecoin market caps (64 coins on Solana), protocol TVL history + age (Lindyness), fees/revenue per protocol, DEX volume, APY history per pool. All stored in ClickHouse for long-term analytics.</div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">Free API</span></div>
       </div>
 
       <div class="card">
@@ -603,6 +614,7 @@
           <div class="arch-box arch-green">News API<br><small>Crypto news / 10 min</small></div>
           <div class="arch-box arch-green">Helius<br><small>Wallet / 15 min</small></div>
           <div class="arch-box arch-green">Jupiter Prices<br><small>13 stablecoins / 30s</small></div>
+          <div class="arch-box arch-green">DeFiLlama Extended<br><small>6 endpoints / 5min-daily</small></div>
         </div>
         <div class="arch-arrow">&darr;</div>
         <div class="arch-label">Processing</div>
@@ -610,12 +622,12 @@
           <div class="arch-box arch-blue">SQLite Cache</div>
           <div class="arch-box arch-blue">Trigger Engine<br><small>yield / TVL / depeg / security</small></div>
           <div class="arch-box arch-blue">LLM (Gemini)<br><small>tool-calling</small></div>
-          <div class="arch-box arch-blue">ClickHouse Write<br><small>APY / prices / alerts</small></div>
+          <div class="arch-box arch-blue">ClickHouse Write<br><small>8 tables / all data types</small></div>
         </div>
         <div class="arch-arrow">&darr;</div>
         <div class="arch-label">Output</div>
         <div class="arch-row">
-          <div class="arch-box arch-purple">2 Telegram Bots<br><small>8 commands + alerts</small></div>
+          <div class="arch-box arch-purple">2 Telegram Bots<br><small>9 commands + alerts</small></div>
         </div>
       </div>
     </div>
@@ -839,9 +851,9 @@
           <div class="card-icon" style="background:var(--blue-dim);color:var(--blue);">&#128260;</div>
         </div>
         <div class="card-desc">
-          Primary + backup for every critical data source. Jupiter + CoinGecko fallback for prices is done. DeFiLlama fails? Fall back to protocol APIs. Auto-switch on 2 consecutive failures.
+          Primary + backup for every critical data source. Jupiter + CoinGecko fallback for prices is done. DeFiLlama stablecoins as backup for Jupiter/CoinGecko prices. DeFiLlama lending rates provide utilization data as redundant source. Auto-switch on 2 consecutive failures.
         </div>
-        <div class="card-tags"><span class="tag tag-done">Partial</span><span class="tag tag-free">Free APIs as backup</span></div>
+        <div class="card-tags"><span class="tag tag-done">Mostly Done</span><span class="tag tag-free">Free APIs as backup</span></div>
       </div>
 
       <div class="card">
@@ -861,11 +873,11 @@
           <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9889;</div>
         </div>
         <div class="card-desc">
-          Dune SIM Solana API: real-time balances + transactions, 500k events/mo free. API key obtained. Replaces Helius paid tier for outflow detection. Poll vault transactions every 30s, filter transfers > $500K. Backup data source for wallet balances.
+          Dune SIM Solana API: real-time balances + transactions, 500k events/mo free. API key obtained, integration pending. Replaces Helius paid tier for outflow detection. Poll vault transactions every 30s, filter transfers > $500K. Backup data source for wallet balances.
           <br><br>
           <strong>Budget impact:</strong> Could eliminate the need for Helius Starter ($49/mo).
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">500k events free</span></div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">API key obtained</span></div>
       </div>
 
       <div class="card">
@@ -874,11 +886,11 @@
           <div class="card-icon" style="background:var(--orange-dim);color:var(--orange);">&#128200;</div>
         </div>
         <div class="card-desc">
-          Inspired by Nomad Analyst's platform. Monitor lending markets in depth: utilization per reserve, health factor distribution, borrow rate curve position, collateral vs loan ratios. Alert when markets approach stress thresholds.
+          Data pipeline now in place: DeFiLlama TVL + fees/revenue + DEX volume + lending rates (with utilization %) all being ingested into ClickHouse. Only needs the bot command (<code>/protocol</code>) and alert triggers to be wired up.
           <br><br>
-          <strong>New command:</strong> <code>/health</code> for lending market overview.
+          <strong>New command:</strong> <code>/protocol</code> for protocol health overview.
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">Medium-High</span></div>
+        <div class="card-tags"><span class="tag tag-planned">In Progress</span><span class="tag tag-free">Data pipeline done</span></div>
       </div>
 
       <div class="card">
@@ -1102,7 +1114,8 @@
     <div class="discuss">
       <h4>Active Discussion</h4>
       <ul>
-        <li><strong>Curator Performance Tracking:</strong> Data pipeline is in place (hourly APY snapshots in ClickHouse). Next step is building the metrics: Sharpe-like ratio, reaction time during events, rebalance frequency. This would let us objectively compare curator quality over time.</li>
+        <li><strong>Curator Performance Tracking:</strong> Data pipeline fully operational. Hourly APY snapshots + protocol TVL/fees/revenue in ClickHouse. Next: build performance metrics (Sharpe ratio, APY volatility, reaction time) and <code>/curators</code> command.</li>
+        <li><strong>DeFiLlama Paid Endpoints:</strong> DeFiLlama covers 7 free endpoints. Paid endpoints (bridges, token emissions, hacks database, derivatives) could add more value. Worth the cost?</li>
       </ul>
     </div>
 
