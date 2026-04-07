@@ -468,7 +468,7 @@
   <div class="tab-nav">
     <button class="tab-btn active" onclick="switchTab('current')">Current State<span class="tab-cost">Live</span></button>
     <button class="tab-btn" onclick="switchTab('tier1')">Tier 1: Core Monitoring<span class="tab-cost">$0 - This week</span></button>
-    <button class="tab-btn" onclick="switchTab('tier2')">Tier 2: Real-Time + Team<span class="tab-cost">$0-50/mo</span></button>
+    <button class="tab-btn" onclick="switchTab('tier2')">Tier 2: Real-Time + Team<span class="tab-cost">$0 - Complete</span></button>
     <button class="tab-btn" onclick="switchTab('tier3')">Tier 3: Deep Intelligence<span class="tab-cost">$50-200/mo</span></button>
     <button class="tab-btn" onclick="switchTab('discuss')">Discussion<span class="tab-cost">Team input</span></button>
   </div>
@@ -484,7 +484,10 @@
       <div class="stat-item"><div class="stat-value">2,720</div><div class="stat-label">Pools Tracked</div></div>
       <div class="stat-item"><div class="stat-value">48</div><div class="stat-label">Curated Strategies</div></div>
       <div class="stat-item"><div class="stat-value">16</div><div class="stat-label">X Accounts Monitored</div></div>
-      <div class="stat-item"><div class="stat-value">9</div><div class="stat-label">Bot Commands</div></div>
+      <div class="stat-item"><div class="stat-value">10</div><div class="stat-label">Bot Commands</div></div>
+      <div class="stat-item"><div class="stat-value">9</div><div class="stat-label">Alert Types</div></div>
+      <div class="stat-item"><div class="stat-value">9</div><div class="stat-label">Data Sources</div></div>
+      <div class="stat-item"><div class="stat-value">8</div><div class="stat-label">ClickHouse Tables</div></div>
       <div class="stat-item"><div class="stat-value">13</div><div class="stat-label">Stablecoins Monitored</div></div>
       <div class="stat-item"><div class="stat-value">64</div><div class="stat-label">Stablecoin MCaps</div></div>
       <div class="stat-item"><div class="stat-value">Live</div><div class="stat-label">Lending Rates</div></div>
@@ -600,6 +603,15 @@
         <div class="card-desc">Hourly heartbeat message to Telegram. Stale data detection for all 6 sources. Source health visible in <code>/status</code>. Alert if sources go offline.</div>
         <div class="card-tags"><span class="tag tag-done">Live</span><span class="tag tag-free">No new deps</span></div>
       </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Dune SIM Outflow Monitor</h3></div>
+          <div class="card-icon arch-green">&#9679;</div>
+        </div>
+        <div class="card-desc">Monitors 5 Kamino vault addresses every 2 min via Dune SIM API (500k events/mo free). Alerts on outflows > $500K. Direction-aware: only flags withdrawals, not deposits. Deduplicates by transaction hash.</div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">Free API</span></div>
+      </div>
     </div>
 
     <!-- Architecture -->
@@ -615,6 +627,7 @@
           <div class="arch-box arch-green">Helius<br><small>Wallet / 15 min</small></div>
           <div class="arch-box arch-green">Jupiter Prices<br><small>13 stablecoins / 30s</small></div>
           <div class="arch-box arch-green">DeFiLlama Extended<br><small>6 endpoints / 5min-daily</small></div>
+          <div class="arch-box arch-green">Dune SIM<br><small>5 vaults / 2 min</small></div>
         </div>
         <div class="arch-arrow">&darr;</div>
         <div class="arch-label">Processing</div>
@@ -627,7 +640,7 @@
         <div class="arch-arrow">&darr;</div>
         <div class="arch-label">Output</div>
         <div class="arch-row">
-          <div class="arch-box arch-purple">2 Telegram Bots<br><small>9 commands + alerts</small></div>
+          <div class="arch-box arch-purple">2 Telegram Bots<br><small>10 commands + alerts</small></div>
         </div>
       </div>
     </div>
@@ -664,8 +677,8 @@
         <div class="signal-no">Not implemented</div>
 
         <div>Large outflow webhook</div>
-        <div class="signal-no">Not implemented</div>
-        <div class="signal-no">Not implemented</div>
+        <div class="signal-slow">2 min polling (Dune SIM)</div>
+        <div class="signal-slow">2 min polling (Dune SIM)</div>
 
         <div>Signal correlation</div>
         <div class="signal-no">Not implemented</div>
@@ -787,51 +800,93 @@
   <div id="tab-tier2" class="tab-panel">
     <div class="section-header">
       <h2>Tier 2: Real-Time Monitoring + Team Features</h2>
-      <p>From personal bot to team-grade monitoring tool. Sub-second alerts, Slack integration, data redundancy. Some features may require paid tiers.</p>
+      <p>From personal bot to team-grade monitoring tool. Outflow detection, protocol health, data redundancy. All features completed at $0/mo cost.</p>
     </div>
 
     <div class="stats-bar">
-      <div class="stat-item"><div class="stat-value">$0-50</div><div class="stat-label">Monthly Cost</div></div>
-      <div class="stat-item"><div class="stat-value">&lt;1s</div><div class="stat-label">Webhook Latency</div></div>
-      <div class="stat-item"><div class="stat-value">8</div><div class="stat-label">New Features</div></div>
+      <div class="stat-item"><div class="stat-value">$0</div><div class="stat-label">Monthly Cost</div></div>
+      <div class="stat-item"><div class="stat-value">2 min</div><div class="stat-label">Outflow Detection</div></div>
+      <div class="stat-item"><div class="stat-value">12</div><div class="stat-label">Features Done</div></div>
     </div>
 
     <div class="card-grid">
       <div class="card">
         <div class="card-header">
-          <div><h3>Helius Webhooks (Large Outflows)</h3></div>
-          <div class="card-icon" style="background:var(--red-dim);color:var(--red);">&#9889;</div>
+          <div><h3>Utilization Rate Monitoring</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
-          Sub-second alerts when >$500K exits a vault. Webhooks on program IDs: Drift, Kamino Lending, Kamino Liquidity, Marginfi, Jupiter Lend, Orca, etc.
-          <br><br>
-          <strong>Drift scenario:</strong> $213M outflow detected in &lt;1 second - before Twitter even reacts.
+          Track lending pool utilization (borrow/supply ratio). Alert at >90% (withdrawals at risk). During Resolv, vaults hit 99%+ utilization before users realized.
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">Needs HTTP server</span><span class="tag tag-paid">Helius $49/mo?</span></div>
+        <div class="card-tags"><span class="tag tag-done">Done</span></div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div><h3>Protocol Parameter Detection</h3></div>
-          <div class="card-icon" style="background:var(--orange-dim);color:var(--orange);">&#128270;</div>
+          <div><h3>Protocol Health Dashboard</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
-          Monitor admin transactions on major protocols. Detect: market creation, oracle changes, circuit breaker modifications, authority transfers. Flag unusual timing (3 AM) or amplitude (20x).
-          <br><br>
-          <strong>Drift scenario:</strong> The fake CVT market creation + circuit breaker lift were visible on-chain BEFORE the drain.
+          <code>/protocol</code> command: protocol health overview with TVL, age (Lindy score), fees, revenue, lending markets with utilization. Full data pipeline: DeFiLlama TVL + fees/revenue + DEX volume + lending rates all in ClickHouse.
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">High complexity</span></div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">Free API</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Dune SIM Integration</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
+        </div>
+        <div class="card-desc">
+          Dune SIM Solana API: monitors 5 Kamino vault addresses every 2 min (500k events/mo free). Alerts on outflows > $500K. Direction-aware, deduplicates by tx hash. Replaced Helius paid tier for outflow detection.
+          <br><br>
+          <strong>Budget impact:</strong> Eliminated the need for Helius Starter ($49/mo).
+        </div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">Free API</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Redundant Data Sources</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
+        </div>
+        <div class="card-desc">
+          Primary + backup for every critical data source. Jupiter + CoinGecko fallback for prices. DeFiLlama stablecoins as backup. DeFiLlama lending rates provide utilization data as redundant source. Auto-switch on 2 consecutive failures.
+        </div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">Free APIs as backup</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Curated Data Enrichment</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
+        </div>
+        <div class="card-desc">
+          Protocol health flags integrated into <code>/strategies</code>: protocol age warnings (new/very new protocol), zero revenue warnings. LLM tool for /propose can now assess protocol sustainability.
+        </div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">No cost</span></div>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div><h3>Multi-Destination Alerts</h3></div>
-          <div class="card-icon" style="background:var(--blue-dim);color:var(--blue);">&#128490;</div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
-          Alert dispatcher: Telegram (personal) + Slack (team) + custom webhook. Severity filtering: only warning/critical go to Slack. Team-wide visibility for AllezLabs.
+          2 Telegram bots: personal bot + team alerts bot. Severity filtering per destination. All alert types routed to both bots.
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">Slack webhooks free</span></div>
+        <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">2 Telegram bots</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Helius Webhooks</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
+        </div>
+        <div class="card-desc">
+          Replaced by Dune SIM polling (cheaper, simpler). No HTTP server needed. 2 min polling covers the outflow detection use case at $0/mo instead of $49/mo.
+        </div>
+        <div class="card-tags"><span class="tag tag-done">Replaced by Dune SIM</span></div>
       </div>
 
       <div class="card">
@@ -840,68 +895,64 @@
           <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
-          APY snapshots hourly, price history, alert history all stored in ClickHouse for long-term analytics. Kamino lending data (volumes, liquidations, markets) via /kamino command. Next step: curator performance tracking.
+          APY snapshots hourly, price history, alert history all stored in ClickHouse for long-term analytics. Kamino lending data (volumes, liquidations, markets) via /kamino command. 8 tables total.
         </div>
         <div class="card-tags"><span class="tag tag-done">Done</span><span class="tag tag-free">Internal infra</span></div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div><h3>Redundant Data Sources</h3></div>
-          <div class="card-icon" style="background:var(--blue-dim);color:var(--blue);">&#128260;</div>
+          <div><h3>Protocol Parameter Detection</h3></div>
+          <div class="card-icon" style="background:var(--yellow-dim);color:var(--yellow);">&#128270;</div>
         </div>
         <div class="card-desc">
-          Primary + backup for every critical data source. Jupiter + CoinGecko fallback for prices is done. DeFiLlama stablecoins as backup for Jupiter/CoinGecko prices. DeFiLlama lending rates provide utilization data as redundant source. Auto-switch on 2 consecutive failures.
+          Monitor admin transactions on major protocols. Detect: market creation, oracle changes, circuit breaker modifications, authority transfers. Moved to Tier 3 (requires protocol-specific adapters).
         </div>
-        <div class="card-tags"><span class="tag tag-done">Mostly Done</span><span class="tag tag-free">Free APIs as backup</span></div>
+        <div class="card-tags"><span class="tag tag-planned">Moved to Tier 3</span><span class="tag tag-complex">High complexity</span></div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div><h3>Utilization Rate Monitoring</h3></div>
-          <div class="card-icon" style="background:var(--yellow-dim);color:var(--yellow);">&#128200;</div>
+          <div><h3>Utilization + MCap + Fee Triggers</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
-          Track lending pool utilization (borrow/supply ratio). Alert at >90% (withdrawals at risk). During Resolv, vaults hit 99%+ utilization before users realized.
+          3 new alert types: utilization >90% warning (withdrawals at risk), stablecoin mcap drops >5% (confidence loss), zero-revenue protocols with high APY (unsustainable yield).
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">Protocol-specific</span></div>
+        <div class="card-tags"><span class="tag tag-done">Done</span></div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div><h3>Dune SIM Integration</h3></div>
-          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9889;</div>
+          <div><h3>/protocol Command</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
-          Dune SIM Solana API: real-time balances + transactions, 500k events/mo free. API key obtained, integration pending. Replaces Helius paid tier for outflow detection. Poll vault transactions every 30s, filter transfers > $500K. Backup data source for wallet balances.
-          <br><br>
-          <strong>Budget impact:</strong> Could eliminate the need for Helius Starter ($49/mo).
+          Protocol health overview: TVL, age (Lindy score), fees, revenue, lending markets with utilization. Quick assessment of any Solana protocol's fundamentals.
         </div>
-        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-free">API key obtained</span></div>
+        <div class="card-tags"><span class="tag tag-done">Done</span></div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div><h3>Protocol Health Dashboard</h3></div>
-          <div class="card-icon" style="background:var(--orange-dim);color:var(--orange);">&#128200;</div>
+          <div><h3>LLM Protocol Health Tool</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
-          Data pipeline now in place: DeFiLlama TVL + fees/revenue + DEX volume + lending rates (with utilization %) all being ingested into ClickHouse. Only needs the bot command (<code>/protocol</code>) and alert triggers to be wired up.
-          <br><br>
-          <strong>New command:</strong> <code>/protocol</code> for protocol health overview.
+          <code>get_protocol_health</code> tool for /propose. LLM can now assess protocol sustainability (TVL, age, fees, revenue) before recommending strategies. Reduces risk of suggesting unsustainable yields.
         </div>
-        <div class="card-tags"><span class="tag tag-planned">In Progress</span><span class="tag tag-free">Data pipeline done</span></div>
+        <div class="card-tags"><span class="tag tag-done">Done</span></div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div><h3>Curated Data Enrichment</h3></div>
-          <div class="card-icon" style="background:var(--purple-dim);color:var(--purple);">&#128218;</div>
+          <div><h3>/strategies Enriched</h3></div>
+          <div class="card-icon" style="background:var(--green-dim);color:var(--green);">&#9679;</div>
         </div>
         <div class="card-desc">
-          Add missing risk dimensions to all 48 strategies: protocol age, exit mechanism, oracle type, audit freshness, timelock, open source status. Research task (~2-3h), no code.
+          Protocol age flags (new/very new protocol warnings), zero revenue warnings displayed inline. Users see risk context alongside APY data.
         </div>
-        <div class="card-tags"><span class="tag tag-research">Research</span><span class="tag tag-free">No cost</span></div>
+        <div class="card-tags"><span class="tag tag-done">Done</span></div>
       </div>
     </div>
 
@@ -949,7 +1000,7 @@
     <div class="stats-bar">
       <div class="stat-item"><div class="stat-value">$50-200</div><div class="stat-label">Monthly Cost</div></div>
       <div class="stat-item"><div class="stat-value">6</div><div class="stat-label">Dimensions</div></div>
-      <div class="stat-item"><div class="stat-value">7</div><div class="stat-label">New Features</div></div>
+      <div class="stat-item"><div class="stat-value">8</div><div class="stat-label">New Features</div></div>
     </div>
 
     <!-- Risk Framework -->
@@ -1006,6 +1057,21 @@
     </div>
 
     <div class="card-grid">
+      <div class="card">
+        <div class="card-header">
+          <div><h3>Protocol Parameter Detection</h3></div>
+          <div class="card-icon" style="background:var(--orange-dim);color:var(--orange);">&#128270;</div>
+        </div>
+        <div class="card-desc">
+          Monitor admin transactions on major protocols. Detect: market creation, oracle changes, circuit breaker modifications, authority transfers. Flag unusual timing (3 AM) or amplitude (20x).
+          <br><br>
+          <strong>Drift scenario:</strong> The fake CVT market creation + circuit breaker lift were visible on-chain BEFORE the drain.
+          <br><br>
+          <em>Moved from Tier 2 - requires protocol-specific adapters.</em>
+        </div>
+        <div class="card-tags"><span class="tag tag-planned">Planned</span><span class="tag tag-complex">High complexity</span></div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <div><h3>Protocol-Specific Deep Monitoring</h3></div>
@@ -1114,7 +1180,8 @@
     <div class="discuss">
       <h4>Active Discussion</h4>
       <ul>
-        <li><strong>Curator Performance Tracking:</strong> Data pipeline fully operational. Hourly APY snapshots + protocol TVL/fees/revenue in ClickHouse. Next: build performance metrics (Sharpe ratio, APY volatility, reaction time) and <code>/curators</code> command.</li>
+        <li><strong>Tier 2 Complete:</strong> 10 commands, 9 alert types, 9 data sources. The bot is now a comprehensive Solana DeFi monitoring system. Tier 3 focuses on deep protocol intelligence (adapters, multisig, patterns).</li>
+        <li><strong>Curator Performance Tracking:</strong> Full data pipeline operational. All DeFiLlama data (TVL, fees, lending rates, APY) flowing to ClickHouse hourly/daily. Protocol health cached in SQLite. Next: compute performance metrics (Sharpe, volatility, reaction time) and build <code>/curators</code> command.</li>
         <li><strong>DeFiLlama Paid Endpoints:</strong> DeFiLlama covers 7 free endpoints. Paid endpoints (bridges, token emissions, hacks database, derivatives) could add more value. Worth the cost?</li>
       </ul>
     </div>
@@ -1176,9 +1243,9 @@
       <h3>Cost Summary</h3>
       <table class="risk-table">
         <tr><th>Tier</th><th>Timeline</th><th>Cost</th><th>What It Enables</th></tr>
-        <tr><td>Current</td><td>Running now</td><td>$0-4/mo</td><td>Pool scanning, curated strategies, Twitter/news monitoring, AI proposals, alerts, depeg detection, ClickHouse analytics, self-health</td></tr>
+        <tr><td>Current</td><td>Running now</td><td>$0-4/mo</td><td>Pool scanning, curated strategies, Twitter/news monitoring, AI proposals, alerts, depeg detection, ClickHouse analytics, self-health, Dune SIM outflows</td></tr>
         <tr><td>Tier 1</td><td>4/5 done</td><td>$0/mo</td><td>Depeg detection, stale data alerts, yield flags, self-health (done). Correlator engine (planned).</td></tr>
-        <tr><td>Tier 2</td><td>Next week</td><td>$0-50/mo</td><td>Dune SIM integration, Slack for team, data redundancy, utilization monitoring, protocol health dashboard, enriched risk data</td></tr>
+        <tr><td>Tier 2</td><td>Complete</td><td>$0/mo</td><td>Dune SIM outflows, utilization monitoring, /protocol command, LLM health tool, enriched strategies, multi-destination alerts, redundant data sources, 3 new alert types</td></tr>
         <tr><td>Tier 3</td><td>Medium term</td><td>$50-200/mo</td><td>Protocol adapters, multisig watcher, exploit patterns, risk scoring engine, incident reports</td></tr>
       </table>
     </div>
