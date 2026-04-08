@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kamino Risk Operations Dashboard - Proposal</title>
+<style>
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: #1e293b;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --bordeaux: #AA0036;
+    --bordeaux-dim: rgba(170,0,54,0.12);
+    --lavender: #CCA2EA;
+    --lavender-dim: rgba(204,162,234,0.12);
+    --tangerine: #F34B0E;
+    --tangerine-dim: rgba(243,75,14,0.12);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --yellow: #eab308;
+    --yellow-dim: rgba(234,179,8,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59,130,246,0.12);
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  .header { background: linear-gradient(135deg, #0f172a 0%, #1a0a1e 50%, #0f172a 100%); border-bottom: 1px solid var(--border); padding: 48px 24px 40px; text-align: center; }
+  .header h1 { font-size: 2.4rem; font-weight: 800; background: linear-gradient(135deg, #e2e8f0, var(--lavender)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+  .header .subtitle { color: var(--text-muted); font-size: 1.05rem; max-width: 700px; margin: 0 auto; }
+  .header-badges { display: flex; gap: 10px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+  .badge-bordeaux { background: var(--bordeaux-dim); color: var(--bordeaux); border: 1px solid rgba(170,0,54,0.3); }
+  .badge-lavender { background: var(--lavender-dim); color: var(--lavender); border: 1px solid rgba(204,162,234,0.3); }
+  .badge-tangerine { background: var(--tangerine-dim); color: var(--tangerine); border: 1px solid rgba(243,75,14,0.3); }
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+  .section { margin-bottom: 56px; }
+  .section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+  .section h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 8px; margin-top: 24px; color: var(--lavender); }
+  .section p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px; }
+  .section ul { padding-left: 20px; margin-top: 8px; }
+  .section li { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 6px; }
+  .section strong { color: var(--text); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+  .card-sm { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+
+  .highlight-box { background: linear-gradient(135deg, var(--bordeaux-dim), var(--lavender-dim)); border: 1px solid rgba(170,0,54,0.2); border-radius: var(--radius); padding: 24px; margin: 24px 0; }
+
+  /* Mock dashboard */
+  .mock-dashboard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 24px 0; }
+  .mock-header { background: var(--surface2); padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+  .mock-logo { width: 28px; height: 28px; background: var(--bordeaux); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: white; }
+  .mock-title { font-weight: 600; font-size: 0.95rem; }
+  .mock-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .mock-tab { padding: 10px 20px; font-size: 0.8rem; font-weight: 500; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .mock-tab:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .mock-tab.active { color: var(--bordeaux); border-bottom-color: var(--bordeaux); background: rgba(170,0,54,0.05); }
+  .mock-body { padding: 20px; min-height: 400px; }
+
+  /* Mock table */
+  .mock-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .mock-table th { text-align: left; padding: 8px 12px; color: var(--text-muted); font-weight: 500; border-bottom: 1px solid var(--border); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .mock-table td { padding: 10px 12px; border-bottom: 1px solid rgba(30,41,59,0.5); }
+  .mock-table tr:hover { background: rgba(255,255,255,0.02); }
+
+  /* Progress bars */
+  .bar-container { width: 100%; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .bar-green { background: var(--green); }
+  .bar-yellow { background: var(--yellow); }
+  .bar-red { background: var(--red); }
+  .bar-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* Metric cards */
+  .metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .metric { background: var(--surface2); border-radius: 8px; padding: 14px 16px; }
+  .metric-value { font-size: 1.4rem; font-weight: 700; }
+  .metric-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Stablecoin cards */
+  .stable-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .stable-card { background: var(--surface2); border-radius: 8px; padding: 16px; }
+  .stable-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .stable-name { font-weight: 600; font-size: 0.95rem; }
+  .stable-grade { padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; }
+  .grade-a { background: var(--green-dim); color: var(--green); }
+  .grade-b { background: var(--blue-dim); color: var(--blue); }
+  .grade-c { background: var(--yellow-dim); color: var(--yellow); }
+  .stable-price { font-size: 1.2rem; font-weight: 700; }
+  .stable-detail { font-size: 0.75rem; color: var(--text-muted); }
+  .stable-sources { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .source-tag { font-size: 0.65rem; padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; color: var(--text-muted); }
+
+  /* Activity feed */
+  .feed-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(30,41,59,0.5); }
+  .feed-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+  .feed-deposit { background: var(--green-dim); color: var(--green); }
+  .feed-withdraw { background: var(--red-dim); color: var(--red); }
+  .feed-borrow { background: var(--blue-dim); color: var(--blue); }
+  .feed-liquidation { background: var(--tangerine-dim); color: var(--tangerine); }
+  .feed-text { flex: 1; font-size: 0.8rem; }
+  .feed-amount { font-weight: 600; font-size: 0.85rem; }
+  .feed-time { font-size: 0.7rem; color: var(--text-muted); }
+
+  /* Architecture diagram */
+  .arch-box { display: inline-flex; align-items: center; padding: 10px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; font-size: 0.8rem; font-weight: 500; }
+  .arch-arrow { color: var(--text-muted); margin: 0 8px; font-size: 1.2rem; }
+  .arch-flow { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin: 12px 0; }
+
+  /* Vault allocation bars */
+  .alloc-bar { display: flex; height: 20px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+  .alloc-segment { display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 600; color: white; min-width: 30px; }
+
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 32px; }
+  .toc h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; }
+  .toc-list { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .toc-list a { color: var(--lavender); text-decoration: none; font-size: 0.85rem; }
+  .toc-list a:hover { text-decoration: underline; }
+
+  .divider { border: 0; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  .tab-switcher { display: flex; gap: 8px; margin-bottom: 20px; }
+  .tab-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+  .tab-btn:hover { background: var(--surface2); color: var(--text); }
+  .tab-btn.active { background: var(--bordeaux-dim); color: var(--bordeaux); border-color: rgba(170,0,54,0.3); }
+
+  .hidden { display: none; }
+
+  @media (max-width: 768px) {
+    .metric-row { grid-template-columns: repeat(2, 1fr); }
+    .stable-grid { grid-template-columns: 1fr; }
+    .toc-list { grid-template-columns: 1fr; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>Kamino Risk Operations Dashboard</h1>
+  <p class="subtitle">A real-time control room for Kamino lending protocol on Solana. Consolidates 10+ Hex dashboards into a single, always-on monitoring tool with stablecoin risk intelligence.</p>
+  <div class="header-badges">
+    <span class="badge badge-bordeaux">Allez Labs Internal</span>
+    <span class="badge badge-lavender">Kamino on Solana</span>
+    <span class="badge badge-green">All ClickHouse data available</span>
+    <span class="badge badge-blue">+ Pharos Stablecoin Risk</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- Table of Contents -->
+<div class="toc">
+  <h3>Contents</h3>
+  <ul class="toc-list">
+    <li><a href="#problem">1. Problem Statement</a></li>
+    <li><a href="#solution">2. Solution Overview</a></li>
+    <li><a href="#mockup">3. Dashboard Mockup</a></li>
+    <li><a href="#architecture">4. Architecture</a></li>
+    <li><a href="#data">5. Data Sources</a></li>
+    <li><a href="#api">6. API Design</a></li>
+    <li><a href="#phases">7. Phases & Scope</a></li>
+    <li><a href="#next">8. Next Steps</a></li>
+  </ul>
+</div>
+
+<!-- Problem -->
+<div class="section" id="problem">
+  <h2>1. Problem Statement</h2>
+  <div class="card-grid">
+    <div class="card-sm">
+      <h3>Fragmented</h3>
+      <p>10+ separate Hex dashboards for Kamino: fees, rates, liquidations, vault aggregates, position simulator, dollar rates, market metrics... No single source of truth.</p>
+    </div>
+    <div class="card-sm">
+      <h3>Passive</h3>
+      <p>Hex notebooks need manual refresh (15-30 min cache). Not designed for continuous monitoring during the day. You go to Hex to analyze, not to monitor.</p>
+    </div>
+    <div class="card-sm">
+      <h3>Missing Stablecoin Risk</h3>
+      <p>None of the Hex dashboards cover peg stability, blacklist events, reserve backing, or multi-source price consensus for stablecoins in Kamino vaults.</p>
+    </div>
+    <div class="card-sm">
+      <h3>Not Operational</h3>
+      <p>Designed for deep analysis, not for "what's happening right now?" Answering simple questions (is utilization near cap? any depegs?) requires opening multiple dashboards.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Solution -->
+<div class="section" id="solution">
+  <h2>2. Solution</h2>
+  <div class="highlight-box">
+    <p style="color: var(--text); font-size: 1rem; margin-bottom: 12px;"><strong>Build a "control room" for Kamino</strong> that consolidates live operations data into a single dashboard, adds a Pharos-powered stablecoin risk layer, and serves as the go-to tool for continuous monitoring.</p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+      <div>
+        <p style="color: var(--lavender); font-weight: 600; margin-bottom: 4px;">What it IS</p>
+        <ul style="padding-left: 16px;">
+          <li>Live operations dashboard (30-60s refresh)</li>
+          <li>Stablecoin risk intelligence (Pharos + multi-source)</li>
+          <li>All Kamino markets, vaults, positions in one place</li>
+          <li>Activity feed (like Solscan, but Kamino-specific)</li>
+        </ul>
+      </div>
+      <div>
+        <p style="color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">What it is NOT</p>
+        <ul style="padding-left: 16px;">
+          <li>Not replacing Hex (Hex stays for deep analytics)</li>
+          <li>Not a public product (internal Allez tool)</li>
+          <li>Not covering Venus yet (separate existing dashboard)</li>
+          <li>Not a position simulator (Phase 2)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3>Key Principles</h3>
+  <ul>
+    <li><strong>Follow established patterns:</strong> lives in the existing <code>venus-dashboard</code> monorepo as <code>apps/kamino</code>, reuses shared packages</li>
+    <li><strong>Same stack as Venus/Hyperdrive:</strong> React + Vite + Tremor + Express + Modal</li>
+    <li><strong>Complement Hex:</strong> Hex for deep analysis, dashboard for live operations</li>
+    <li><strong>Kamino-first:</strong> scoped to Kamino on Solana, stablecoins used in Kamino vaults</li>
+  </ul>
+</div>
+
+<hr class="divider">
+
+<!-- Mockup -->
+<div class="section" id="mockup">
+  <h2>3. Dashboard Mockup</h2>
+  <p>Interactive preview of the 5 main tabs. Click tabs to switch views.</p>
+
+  <div class="mock-dashboard">
+    <div class="mock-header">
+      <div class="mock-logo">A</div>
+      <span class="mock-title">Kamino Risk Dashboard</span>
+      <span style="margin-left: auto; font-size: 0.7rem; color: var(--green);">&#9679; Live</span>
+      <span style="font-size: 0.7rem; color: var(--text-muted);">Last update: 2s ago</span>
+    </div>
+    <div class="mock-tabs">
+      <div class="mock-tab active" onclick="switchMock('markets')">Markets</div>
+      <div class="mock-tab" onclick="switchMock('vaults')">Vaults</div>
+      <div class="mock-tab" onclick="switchMock('positions')">Positions</div>
+      <div class="mock-tab" onclick="switchMock('stablecoins')">Stablecoin Risk</div>
+      <div class="mock-tab" onclick="switchMock('activity')">Activity</div>
+    </div>
+
+    <!-- Markets Tab -->
+    <div class="mock-body" id="mock-markets">
+      <div class="metric-row">
+        <div class="metric"><div class="metric-value">$2.1B</div><div class="metric-label">Total Supply</div></div>
+        <div class="metric"><div class="metric-value">$890M</div><div class="metric-label">Total Borrows</div></div>
+        <div class="metric"><div class="metric-value">42.3%</div><div class="metric-label">Avg Utilization</div></div>
+        <div class="metric"><div class="metric-value">7</div><div class="metric-label">Active Markets</div></div>
+      </div>
+      <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+        <span class="tab-btn active" style="font-size: 0.72rem; padding: 4px 12px;">All Markets</span>
+        <span class="tab-btn" style="font-size: 0.72rem; padding: 4px 12px;">Main</span>
+        <span class="tab-btn" style="font-size: 0.72rem; padding: 4px 12px;">JLP</span>
+        <span class="tab-btn" style="font-size: 0.72rem; padding: 4px 12px;">Altcoin</span>
+      </div>
+      <table class="mock-table">
+        <thead><tr><th>Market</th><th>Token</th><th>Supply TVL</th><th>Borrow TVL</th><th>Utilization</th><th>Supply APY</th><th>Borrow APY</th><th>Supply Cap</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Main</strong></td><td>USDC</td><td>$412M</td><td>$298M</td><td>
+            <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--yellow);font-weight:600;">72.3%</span>
+            <div class="bar-container" style="width:80px;"><div class="bar-fill bar-yellow" style="width:72%"></div></div></div>
+          </td><td style="color:var(--green)">5.2%</td><td>8.1%</td><td>
+            <div><div class="bar-container" style="width:80px;"><div class="bar-fill bar-green" style="width:82%"></div></div><div class="bar-label">412M / 500M</div></div>
+          </td></tr>
+          <tr><td><strong>Main</strong></td><td>SOL</td><td>$380M</td><td>$142M</td><td>
+            <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--green);font-weight:600;">37.4%</span>
+            <div class="bar-container" style="width:80px;"><div class="bar-fill bar-green" style="width:37%"></div></div></div>
+          </td><td style="color:var(--green)">2.8%</td><td>4.5%</td><td>
+            <div><div class="bar-container" style="width:80px;"><div class="bar-fill bar-green" style="width:63%"></div></div><div class="bar-label">380M / 600M</div></div>
+          </td></tr>
+          <tr><td><strong>Main</strong></td><td>USDT</td><td>$189M</td><td>$168M</td><td>
+            <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--red);font-weight:600;">88.9%</span>
+            <div class="bar-container" style="width:80px;"><div class="bar-fill bar-red" style="width:89%"></div></div></div>
+          </td><td style="color:var(--green)">9.4%</td><td>14.2%</td><td>
+            <div><div class="bar-container" style="width:80px;"><div class="bar-fill bar-yellow" style="width:94%"></div></div><div class="bar-label">189M / 200M</div></div>
+          </td></tr>
+          <tr><td><strong>JLP</strong></td><td>USDC</td><td>$245M</td><td>$201M</td><td>
+            <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--yellow);font-weight:600;">82.0%</span>
+            <div class="bar-container" style="width:80px;"><div class="bar-fill bar-yellow" style="width:82%"></div></div></div>
+          </td><td style="color:var(--green)">7.8%</td><td>11.3%</td><td>
+            <div><div class="bar-container" style="width:80px;"><div class="bar-fill bar-yellow" style="width:81%"></div></div><div class="bar-label">245M / 300M</div></div>
+          </td></tr>
+          <tr><td><strong>JLP</strong></td><td>JLP</td><td>$156M</td><td>-</td><td>
+            <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--text-muted);font-weight:600;">0%</span>
+            <div class="bar-container" style="width:80px;"><div class="bar-fill bar-green" style="width:0%"></div></div></div>
+          </td><td style="color:var(--text-muted)">-</td><td>-</td><td>
+            <div><div class="bar-container" style="width:80px;"><div class="bar-fill bar-green" style="width:52%"></div></div><div class="bar-label">156M / 300M</div></div>
+          </td></tr>
+          <tr><td><strong>Altcoin</strong></td><td>USDC</td><td>$98M</td><td>$71M</td><td>
+            <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--yellow);font-weight:600;">72.4%</span>
+            <div class="bar-container" style="width:80px;"><div class="bar-fill bar-yellow" style="width:72%"></div></div></div>
+          </td><td style="color:var(--green)">6.1%</td><td>9.8%</td><td>
+            <div><div class="bar-container" style="width:80px;"><div class="bar-fill bar-green" style="width:65%"></div></div><div class="bar-label">98M / 150M</div></div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Vaults Tab -->
+    <div class="mock-body hidden" id="mock-vaults">
+      <div class="metric-row">
+        <div class="metric"><div class="metric-value">18</div><div class="metric-label">Active Vaults</div></div>
+        <div class="metric"><div class="metric-value">$340M</div><div class="metric-label">Total Vault TVL</div></div>
+        <div class="metric"><div class="metric-value">4</div><div class="metric-label">Allez Vaults</div></div>
+        <div class="metric"><div class="metric-value">6</div><div class="metric-label">Operators</div></div>
+      </div>
+      <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+        <span class="tab-btn active" style="font-size: 0.72rem; padding: 4px 12px;">All Vaults</span>
+        <span class="tab-btn" style="font-size: 0.72rem; padding: 4px 12px; background: var(--bordeaux-dim); color: var(--bordeaux); border-color: rgba(170,0,54,0.3);">Allez Only</span>
+      </div>
+      <table class="mock-table">
+        <thead><tr><th>Vault</th><th>Token</th><th>TVL</th><th>Allocation</th><th>Drift</th></tr></thead>
+        <tbody>
+          <tr style="background: rgba(170,0,54,0.04);">
+            <td><strong style="color: var(--bordeaux);">Allez USDC</strong></td><td>USDC</td><td>$42.1M</td>
+            <td><div class="alloc-bar">
+              <div class="alloc-segment" style="width:60%;background:#3b82f6;">Main 60%</div>
+              <div class="alloc-segment" style="width:25%;background:#8b5cf6;">JLP 25%</div>
+              <div class="alloc-segment" style="width:15%;background:#f59e0b;">Alt 15%</div>
+            </div></td>
+            <td><span style="color: var(--green);">0.3%</span></td>
+          </tr>
+          <tr style="background: rgba(170,0,54,0.04);">
+            <td><strong style="color: var(--bordeaux);">Allez USDT</strong></td><td>USDT</td><td>$18.5M</td>
+            <td><div class="alloc-bar">
+              <div class="alloc-segment" style="width:80%;background:#3b82f6;">Main 80%</div>
+              <div class="alloc-segment" style="width:20%;background:#f59e0b;">Alt 20%</div>
+            </div></td>
+            <td><span style="color: var(--green);">0.1%</span></td>
+          </tr>
+          <tr style="background: rgba(170,0,54,0.04);">
+            <td><strong style="color: var(--bordeaux);">Allez USDS</strong></td><td>USDS</td><td>$8.2M</td>
+            <td><div class="alloc-bar">
+              <div class="alloc-segment" style="width:100%;background:#3b82f6;">Main 100%</div>
+            </div></td>
+            <td><span style="color: var(--green);">0.0%</span></td>
+          </tr>
+          <tr>
+            <td><strong>Gauntlet Prime USDC</strong></td><td>USDC</td><td>$67.3M</td>
+            <td><div class="alloc-bar">
+              <div class="alloc-segment" style="width:50%;background:#3b82f6;">Main 50%</div>
+              <div class="alloc-segment" style="width:35%;background:#8b5cf6;">JLP 35%</div>
+              <div class="alloc-segment" style="width:15%;background:#f59e0b;">Alt 15%</div>
+            </div></td>
+            <td><span style="color: var(--yellow);">1.2%</span></td>
+          </tr>
+          <tr>
+            <td><strong>Steakhouse USDC High Yield</strong></td><td>USDC</td><td>$31.8M</td>
+            <td><div class="alloc-bar">
+              <div class="alloc-segment" style="width:40%;background:#3b82f6;">Main 40%</div>
+              <div class="alloc-segment" style="width:45%;background:#8b5cf6;">JLP 45%</div>
+              <div class="alloc-segment" style="width:15%;background:#f59e0b;">Alt 15%</div>
+            </div></td>
+            <td><span style="color: var(--green);">0.5%</span></td>
+          </tr>
+          <tr>
+            <td><strong>MEV Capital USDC</strong></td><td>USDC</td><td>$22.4M</td>
+            <td><div class="alloc-bar">
+              <div class="alloc-segment" style="width:70%;background:#3b82f6;">Main 70%</div>
+              <div class="alloc-segment" style="width:30%;background:#8b5cf6;">JLP 30%</div>
+            </div></td>
+            <td><span style="color: var(--green);">0.2%</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Positions Tab -->
+    <div class="mock-body hidden" id="mock-positions">
+      <div class="metric-row">
+        <div class="metric"><div class="metric-value" style="color:var(--red);">23</div><div class="metric-label">At-Risk Positions (&lt;1.2 HF)</div></div>
+        <div class="metric"><div class="metric-value">$14.2M</div><div class="metric-label">Liquidation at -10%</div></div>
+        <div class="metric"><div class="metric-value">$89.3M</div><div class="metric-label">Liquidation at -20%</div></div>
+        <div class="metric"><div class="metric-value">$312M</div><div class="metric-label">Liquidation at -30%</div></div>
+      </div>
+      <h3 style="font-size: 0.85rem; margin-bottom: 12px;">Positions Closest to Liquidation</h3>
+      <table class="mock-table">
+        <thead><tr><th>Owner</th><th>Market</th><th>Collateral</th><th>Debt</th><th>Health Factor</th><th>Liq. Price</th></tr></thead>
+        <tbody>
+          <tr><td><code style="font-size:0.7rem;">7xK9...mP2q</code></td><td>Main</td><td>$2.4M SOL</td><td>$1.9M USDC</td>
+            <td><span style="color:var(--red);font-weight:700;">1.05</span></td><td>$128.40</td></tr>
+          <tr><td><code style="font-size:0.7rem;">Bmn4...vR8x</code></td><td>JLP</td><td>$890K JLP</td><td>$720K USDC</td>
+            <td><span style="color:var(--red);font-weight:700;">1.08</span></td><td>$2.18</td></tr>
+          <tr><td><code style="font-size:0.7rem;">9pLw...kN3j</code></td><td>Main</td><td>$1.1M SOL</td><td>$850K USDT</td>
+            <td><span style="color:var(--yellow);font-weight:700;">1.12</span></td><td>$124.60</td></tr>
+          <tr><td><code style="font-size:0.7rem;">Fq2x...hY7w</code></td><td>Altcoin</td><td>$560K WIF</td><td>$410K USDC</td>
+            <td><span style="color:var(--yellow);font-weight:700;">1.15</span></td><td>$0.92</td></tr>
+          <tr><td><code style="font-size:0.7rem;">Kd8m...pQ4r</code></td><td>Main</td><td>$3.2M SOL</td><td>$2.4M USDC</td>
+            <td><span style="color:var(--yellow);font-weight:700;">1.18</span></td><td>$119.30</td></tr>
+        </tbody>
+      </table>
+      <h3 style="font-size: 0.85rem; margin-top: 20px; margin-bottom: 12px;">Liquidation Cascade Simulation</h3>
+      <div style="display: flex; gap: 12px; align-items: flex-end; height: 120px; padding: 12px 0;">
+        <div style="text-align: center;">
+          <div style="width: 60px; height: 20px; background: var(--green); border-radius: 4px 4px 0 0;"></div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">-5%</div>
+          <div style="font-size: 0.75rem; font-weight: 600;">$2.1M</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="width: 60px; height: 45px; background: var(--yellow); border-radius: 4px 4px 0 0;"></div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">-10%</div>
+          <div style="font-size: 0.75rem; font-weight: 600;">$14.2M</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="width: 60px; height: 80px; background: var(--tangerine); border-radius: 4px 4px 0 0;"></div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">-20%</div>
+          <div style="font-size: 0.75rem; font-weight: 600;">$89.3M</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="width: 60px; height: 110px; background: var(--red); border-radius: 4px 4px 0 0;"></div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">-30%</div>
+          <div style="font-size: 0.75rem; font-weight: 600;">$312M</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stablecoin Risk Tab -->
+    <div class="mock-body hidden" id="mock-stablecoins">
+      <div class="metric-row">
+        <div class="metric"><div class="metric-value" style="color:var(--green);">6/6</div><div class="metric-label">Stables On-Peg</div></div>
+        <div class="metric"><div class="metric-value">0</div><div class="metric-label">Active Depeg Events</div></div>
+        <div class="metric"><div class="metric-value">2</div><div class="metric-label">Blacklist Events (7d)</div></div>
+        <div class="metric"><div class="metric-value" style="color:var(--green);">Stable</div><div class="metric-label">Mint/Burn Flow</div></div>
+      </div>
+      <div class="stable-grid">
+        <div class="stable-card">
+          <div class="stable-header"><span class="stable-name">USDC</span><span class="stable-grade grade-a">A+</span></div>
+          <div class="stable-price" style="color:var(--green);">$0.9999</div>
+          <div class="stable-detail">Deviation: 0.01% | DEX Liquidity: $890M</div>
+          <div class="stable-sources">
+            <span class="source-tag">Jupiter: $0.9999</span>
+            <span class="source-tag">Pyth: $0.9999</span>
+            <span class="source-tag">Coinbase: $0.9999</span>
+          </div>
+        </div>
+        <div class="stable-card">
+          <div class="stable-header"><span class="stable-name">USDT</span><span class="stable-grade grade-b">B+</span></div>
+          <div class="stable-price" style="color:var(--green);">$0.9998</div>
+          <div class="stable-detail">Deviation: 0.02% | DEX Liquidity: $342M</div>
+          <div class="stable-sources">
+            <span class="source-tag">Jupiter: $0.9998</span>
+            <span class="source-tag">Pyth: $0.9998</span>
+            <span class="source-tag">Coinbase: $1.0000</span>
+          </div>
+        </div>
+        <div class="stable-card">
+          <div class="stable-header"><span class="stable-name">USDS</span><span class="stable-grade grade-b">B</span></div>
+          <div class="stable-price" style="color:var(--green);">$0.9998</div>
+          <div class="stable-detail">Deviation: 0.02% | DEX Liquidity: $45M</div>
+          <div class="stable-sources">
+            <span class="source-tag">Jupiter: $0.9997</span>
+            <span class="source-tag">Pyth: $0.9998</span>
+            <span class="source-tag">Coinbase: $0.9999</span>
+          </div>
+        </div>
+        <div class="stable-card">
+          <div class="stable-header"><span class="stable-name">PYUSD</span><span class="stable-grade grade-b">B+</span></div>
+          <div class="stable-price" style="color:var(--green);">$0.9999</div>
+          <div class="stable-detail">Deviation: 0.01% | DEX Liquidity: $28M</div>
+          <div class="stable-sources">
+            <span class="source-tag">Jupiter: $0.9999</span>
+            <span class="source-tag">Pyth: $0.9999</span>
+          </div>
+        </div>
+        <div class="stable-card">
+          <div class="stable-header"><span class="stable-name">USDG</span><span class="stable-grade grade-c">C+</span></div>
+          <div class="stable-price" style="color:var(--yellow);">$0.9984</div>
+          <div class="stable-detail">Deviation: 0.16% | DEX Liquidity: $8M</div>
+          <div class="stable-sources">
+            <span class="source-tag">Jupiter: $0.9984</span>
+            <span class="source-tag">Pyth: $0.9987</span>
+          </div>
+        </div>
+        <div class="stable-card">
+          <div class="stable-header"><span class="stable-name">CASH</span><span class="stable-grade grade-c">C</span></div>
+          <div class="stable-price" style="color:var(--green);">$0.9995</div>
+          <div class="stable-detail">Deviation: 0.05% | DEX Liquidity: $3M</div>
+          <div class="stable-sources">
+            <span class="source-tag">Jupiter: $0.9995</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top: 12px; font-size: 0.75rem; color: var(--text-muted);">Powered by Pharos safety scores + Allez multi-source price consensus (Jupiter, Pyth, CEX orderbook)</p>
+    </div>
+
+    <!-- Activity Tab -->
+    <div class="mock-body hidden" id="mock-activity">
+      <div class="metric-row">
+        <div class="metric"><div class="metric-value">1,247</div><div class="metric-label">Transactions (24h)</div></div>
+        <div class="metric"><div class="metric-value">$89.2M</div><div class="metric-label">Volume (24h)</div></div>
+        <div class="metric"><div class="metric-value">3</div><div class="metric-label">Liquidations (24h)</div></div>
+        <div class="metric"><div class="metric-value">$142K</div><div class="metric-label">Liquidation Vol (24h)</div></div>
+      </div>
+      <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+        <span class="tab-btn active" style="font-size: 0.72rem; padding: 4px 12px;">All</span>
+        <span class="tab-btn" style="font-size: 0.72rem; padding: 4px 12px;">Deposits</span>
+        <span class="tab-btn" style="font-size: 0.72rem; padding: 4px 12px;">Withdrawals</span>
+        <span class="tab-btn" style="font-size: 0.72rem; padding: 4px 12px;">Borrows</span>
+        <span class="tab-btn" style="font-size: 0.72rem; padding: 4px 12px;">Liquidations</span>
+      </div>
+      <div class="feed-item">
+        <div class="feed-icon feed-deposit">D</div>
+        <div class="feed-text"><strong>Deposit</strong> on Main market</div>
+        <div class="feed-amount" style="color:var(--green);">+$2.4M USDC</div>
+        <div class="feed-time">2 min ago</div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-icon feed-withdraw">W</div>
+        <div class="feed-text"><strong>Withdraw</strong> from JLP market</div>
+        <div class="feed-amount" style="color:var(--red);">-$890K USDC</div>
+        <div class="feed-time">5 min ago</div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-icon feed-borrow">B</div>
+        <div class="feed-text"><strong>Borrow</strong> on Main market</div>
+        <div class="feed-amount">$1.2M USDT</div>
+        <div class="feed-time">8 min ago</div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-icon feed-liquidation">L</div>
+        <div class="feed-text"><strong>Liquidation</strong> on Altcoin market - <code style="font-size:0.7rem;">Fq2x...hY7w</code></div>
+        <div class="feed-amount" style="color:var(--tangerine);">$54K WIF</div>
+        <div class="feed-time">23 min ago</div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-icon feed-deposit">D</div>
+        <div class="feed-text"><strong>Deposit</strong> on Main market</div>
+        <div class="feed-amount" style="color:var(--green);">+$780K SOL</div>
+        <div class="feed-time">31 min ago</div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-icon feed-withdraw">W</div>
+        <div class="feed-text"><strong>Withdraw</strong> from Main market</div>
+        <div class="feed-amount" style="color:var(--red);">-$1.5M USDC</div>
+        <div class="feed-time">42 min ago</div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-icon feed-borrow">B</div>
+        <div class="feed-text"><strong>Borrow</strong> on JLP market</div>
+        <div class="feed-amount">$320K USDC</div>
+        <div class="feed-time">1h ago</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- Architecture -->
+<div class="section" id="architecture">
+  <h2>4. Architecture</h2>
+  <div class="card">
+    <h3>Monorepo Structure</h3>
+    <div class="arch-flow">
+      <div class="arch-box">Browser (React + Tremor)</div>
+      <span class="arch-arrow">&rarr;</span>
+      <div class="arch-box">Express API (5min cache)</div>
+      <span class="arch-arrow">&rarr;</span>
+      <div class="arch-box">ClickHouse</div>
+    </div>
+    <div class="arch-flow">
+      <div class="arch-box" style="margin-left: 240px;">Express API</div>
+      <span class="arch-arrow">&rarr;</span>
+      <div class="arch-box" style="border-color: var(--lavender);">Pharos API</div>
+    </div>
+    <pre style="background: var(--surface2); padding: 16px; border-radius: 8px; font-size: 0.78rem; margin-top: 16px; overflow-x: auto; color: var(--text-muted);">
+venus-dashboard/              (existing monorepo)
+  apps/
+    venus/                    (existing - BNB Chain)
+    hyperdrive/               (existing - HyperEVM)
+    <strong style="color:var(--bordeaux);">kamino/</strong>                    <strong style="color:var(--bordeaux);">(NEW)</strong>
+      server/index.ts         Express API
+      server/routes/          Route handlers
+      src/pages/              React pages
+      src/components/         Kamino UI components
+      deploy_kamino.py        Modal deployment
+  packages/
+    server-utils/             queryClickHouse, cache, rate-limit
+    client-utils/             formatters, useFetchApi
+    ui/                       DataTable, MetricCard, ErrorState
+    tailwind-config/          Allez brand tokens</pre>
+  </div>
+
+  <div class="card">
+    <h3>Deployment</h3>
+    <p>Same pattern as Venus/Hyperdrive: single Modal container, Express serves static frontend + API.</p>
+    <table class="mock-table" style="margin-top: 12px;">
+      <thead><tr><th>App</th><th>Protocol</th><th>Chain</th><th>Port</th><th>URL</th></tr></thead>
+      <tbody>
+        <tr><td>apps/venus</td><td>Venus</td><td>BNB Chain</td><td>3001</td><td>venus.allez.xyz</td></tr>
+        <tr><td>apps/hyperdrive</td><td>Hyperdrive</td><td>HyperEVM</td><td>3002</td><td>hyperdrive.allez.xyz</td></tr>
+        <tr style="background: rgba(170,0,54,0.05);"><td><strong>apps/kamino</strong></td><td><strong>Kamino</strong></td><td><strong>Solana</strong></td><td><strong>3003</strong></td><td><strong>kamino.allez.xyz</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Data Sources -->
+<div class="section" id="data">
+  <h2>5. Data Sources</h2>
+  <div class="card">
+    <h3>ClickHouse Tables (all existing, no new ingestion)</h3>
+    <table class="mock-table">
+      <thead><tr><th>Table</th><th>Purpose</th><th>Freshness</th><th>Rows</th></tr></thead>
+      <tbody>
+        <tr><td><code>kamino_reserve_history</code></td><td>Reserve metrics (supply, borrow, APY, caps, utilization)</td><td>Hourly</td><td>2M</td></tr>
+        <tr><td><code>int_kamino_vault_allocation_strategy_exploded</code></td><td>Vault allocations per reserve/market</td><td>Hourly</td><td>5.6M</td></tr>
+        <tr><td><code>int_kamino_vault_snapshots</code></td><td>Vault metadata, TVL, fees</td><td>Hourly</td><td>1.8M</td></tr>
+        <tr><td><code>stg_kamino_latest_position_snapshot_table</code></td><td>Latest obligation positions</td><td>Latest</td><td>3.4M</td></tr>
+        <tr><td><code>stg_kamino_all_transactions_mv</code></td><td>All transactions (deposit/withdraw/borrow/repay/liq)</td><td>Near real-time</td><td>8.3M</td></tr>
+        <tr><td><code>kamino_liquidations_v4</code></td><td>Liquidation details</td><td>Near real-time</td><td>232K</td></tr>
+        <tr><td><code>marts_unified__token_prices_latest</code></td><td>Multi-source token prices (Pyth, etc.)</td><td>Near real-time</td><td>568</td></tr>
+        <tr><td><code>cex_orderbook_snapshot</code></td><td>CEX bid/ask/spread</td><td>~Hourly</td><td>15K</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Pharos API (stablecoin risk layer)</h3>
+    <p>Requires API key (requested via Alex/TokenBrice contact).</p>
+    <table class="mock-table" style="margin-top: 12px;">
+      <thead><tr><th>Endpoint</th><th>Data</th><th>Cache</th></tr></thead>
+      <tbody>
+        <tr><td><code>/api/peg-summary</code></td><td>Current peg deviations, active depegs</td><td>60s</td></tr>
+        <tr><td><code>/api/report-cards</code></td><td>Safety grades (A+ to F), audit status</td><td>300s</td></tr>
+        <tr><td><code>/api/blacklist</code></td><td>Freeze/blacklist events</td><td>60s</td></tr>
+        <tr><td><code>/api/mint-burn-flows</code></td><td>Mint/burn flows, flight-to-quality</td><td>60s</td></tr>
+        <tr><td><code>/api/dex-liquidity</code></td><td>DEX liquidity scores, pool depth</td><td>300s</td></tr>
+        <tr><td><code>/api/depeg-events</code></td><td>Historical depeg events</td><td>60s</td></tr>
+        <tr><td><code>/api/stability-index</code></td><td>PSI stability score</td><td>300s</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- API Design -->
+<div class="section" id="api">
+  <h2>6. API Design</h2>
+  <div class="card-grid">
+    <div class="card-sm">
+      <h3 style="color: var(--blue);">Markets</h3>
+      <p><code>GET /api/markets</code> - all markets + reserves<br>
+      <code>GET /api/markets/:name</code> - single market<br>
+      <code>GET /api/markets/:name/history</code> - 24h history</p>
+    </div>
+    <div class="card-sm">
+      <h3 style="color: #8b5cf6;">Vaults</h3>
+      <p><code>GET /api/vaults</code> - all vaults + allocations<br>
+      <code>GET /api/vaults/:name</code> - single vault detail<br>
+      <code>GET /api/vaults/:name/history</code> - 24h allocation changes</p>
+    </div>
+    <div class="card-sm">
+      <h3 style="color: var(--tangerine);">Positions</h3>
+      <p><code>GET /api/positions/at-risk</code> - near-liquidation<br>
+      <code>GET /api/positions/whales</code> - top positions<br>
+      <code>?market=&drawdown_pct=10</code></p>
+    </div>
+    <div class="card-sm">
+      <h3 style="color: var(--green);">Activity</h3>
+      <p><code>GET /api/activity/feed</code> - transaction feed<br>
+      <code>GET /api/activity/liquidations</code> - liquidations<br>
+      <code>?hours=24&min_usd=10000&type=all</code></p>
+    </div>
+    <div class="card-sm">
+      <h3 style="color: var(--lavender);">Stablecoin Risk</h3>
+      <p><code>GET /api/stablecoins</code> - all stables overview<br>
+      <code>GET /api/stablecoins/:symbol</code> - full detail<br>
+      <code>GET /api/stablecoins/events</code> - depeg/blacklist events</p>
+    </div>
+    <div class="card-sm">
+      <h3 style="color: var(--red);">Alerts</h3>
+      <p><code>GET /api/alerts</code> - aggregated events<br>
+      Cap breaches, depeg warnings, large txs, liquidation spikes<br>
+      Computed server-side from thresholds</p>
+    </div>
+  </div>
+</div>
+
+<!-- Phases -->
+<div class="section" id="phases">
+  <h2>7. Phases & Scope</h2>
+  <div class="card">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+      <div>
+        <h3 style="color: var(--green);">Phase 1 (This PRD)</h3>
+        <ul>
+          <li>Markets tab (reserves, utilization, caps, APY)</li>
+          <li>Vaults tab (allocations, drift, Allez vaults highlighted)</li>
+          <li>Positions tab (at-risk, whales, drawdown simulation)</li>
+          <li>Stablecoin Risk tab (Pharos + multi-source consensus)</li>
+          <li>Activity feed (transactions, liquidations)</li>
+          <li>Auto-refresh (30-60s)</li>
+          <li>Modal deployment (kamino.allez.xyz)</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="color: var(--text-muted);">Phase 2 (Later)</h3>
+        <ul>
+          <li>Position simulator (pykamino backtest integration)</li>
+          <li>Push notifications (Slack/Telegram)</li>
+          <li>Authentication (if needed for external access)</li>
+          <li>Historical analytics beyond 24h</li>
+          <li>Mobile responsive layout</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top: 16px;">
+    <h3 style="color: var(--text-muted);">Out of Scope</h3>
+    <ul>
+      <li>Venus BNB Chain (already has its own dashboard)</li>
+      <li>Replacing Hex dashboards (they stay for deep analytics)</li>
+      <li>Public-facing product (internal Allez tool)</li>
+      <li>New ClickHouse data ingestion (all tables already exist)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Next Steps -->
+<div class="section" id="next">
+  <h2>8. Next Steps</h2>
+  <div class="card">
+    <ol style="padding-left: 20px;">
+      <li style="margin-bottom: 12px;"><strong>Get Pharos API key</strong> - Alex is reaching out to TokenBrice. Not a blocker for Markets/Vaults/Positions tabs.</li>
+      <li style="margin-bottom: 12px;"><strong>Scaffold <code>apps/kamino</code></strong> - copy <code>apps/venus</code>, update config, create <code>deploy_kamino.py</code>. Follow the "Adding a New Protocol" guide.</li>
+      <li style="margin-bottom: 12px;"><strong>Build Markets tab first</strong> - highest value, uses <code>kamino_reserve_history</code> which is well-understood from Hex dashboards.</li>
+      <li style="margin-bottom: 12px;"><strong>Add Vaults + Activity tabs</strong> - uses vault allocation tables that are already fresh and populated.</li>
+      <li style="margin-bottom: 12px;"><strong>Add Stablecoin Risk tab</strong> - once Pharos API key is available. Multi-source price consensus from ClickHouse can be wired first.</li>
+      <li style="margin-bottom: 12px;"><strong>Deploy to Modal</strong> - <code>modal deploy apps/kamino/deploy_kamino.py</code></li>
+    </ol>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 0.8rem;">
+  Allez Labs - Kamino Risk Dashboard Proposal - April 2026
+</div>
+
+</div>
+
+<script>
+function switchMock(tab) {
+  document.querySelectorAll('.mock-body').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.mock-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('mock-' + tab).classList.remove('hidden');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YieldSage v2 - Solana Risk Intelligence Platform</title>
+<style>
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: #1e293b;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #6366f1;
+    --accent-glow: rgba(99, 102, 241, 0.15);
+    --green: #22c55e;
+    --green-dim: rgba(34, 197, 94, 0.12);
+    --yellow: #eab308;
+    --yellow-dim: rgba(234, 179, 8, 0.12);
+    --orange: #f97316;
+    --orange-dim: rgba(249, 115, 22, 0.12);
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --blue-dim: rgba(59, 130, 246, 0.12);
+    --purple: #a855f7;
+    --purple-dim: rgba(168, 85, 247, 0.12);
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  .header { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); border-bottom: 1px solid var(--border); padding: 48px 24px 40px; text-align: center; }
+  .header h1 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #e2e8f0, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+  .header p { color: var(--text-muted); font-size: 1rem; max-width: 700px; margin: 0 auto; }
+  .header-badges { display: flex; gap: 10px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+  .badge-purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(168,85,247,0.25); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  .section { margin-bottom: 48px; }
+  .section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+  .section h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; margin-top: 24px; }
+  .section p, .section li { color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; }
+  .section ul { padding-left: 20px; margin-top: 8px; }
+  .section li { margin-bottom: 6px; }
+  .section strong { color: var(--text); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+  .card h3 { margin-top: 0; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 16px; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-right: 4px; }
+  .tag-have { background: var(--green-dim); color: var(--green); }
+  .tag-add { background: var(--blue-dim); color: var(--blue); }
+  .tag-new { background: var(--purple-dim); color: var(--purple); }
+  .tag-later { background: var(--yellow-dim); color: var(--yellow); }
+
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; margin: 16px 0; }
+  th { background: var(--surface2); padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 0.73rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+  td:first-child { color: var(--text); font-weight: 600; }
+  tr:hover td { background: var(--surface2); }
+
+  .arch-diagram { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin: 20px 0; overflow-x: auto; }
+  .arch-row { display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .arch-box { padding: 10px 16px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; text-align: center; min-width: 110px; border: 1px solid; }
+  .arch-green { background: var(--green-dim); border-color: rgba(34,197,94,0.3); color: var(--green); }
+  .arch-blue { background: var(--blue-dim); border-color: rgba(59,130,246,0.3); color: var(--blue); }
+  .arch-purple { background: var(--accent-glow); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+  .arch-orange { background: var(--orange-dim); border-color: rgba(249,115,22,0.3); color: var(--orange); }
+  .arch-arrow { text-align: center; color: var(--text-muted); font-size: 1.1rem; margin: 4px 0; }
+  .arch-label { text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+
+  .phase { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; position: relative; }
+  .phase-num { position: absolute; top: -12px; left: 20px; background: var(--accent); color: white; font-size: 0.72rem; font-weight: 700; padding: 2px 10px; border-radius: 10px; }
+  .phase h3 { margin-top: 8px; }
+  .phase-timeline { font-size: 0.78rem; color: var(--accent); font-weight: 600; margin-bottom: 8px; }
+
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .compare-col { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .compare-col h4 { font-size: 0.9rem; margin-bottom: 12px; }
+  .compare-col.current h4 { color: var(--text-muted); }
+  .compare-col.target h4 { color: var(--accent); }
+
+  .footer { text-align: center; padding: 40px 24px; color: var(--text-muted); font-size: 0.78rem; border-top: 1px solid var(--border); margin-top: 40px; }
+
+  @media (max-width: 768px) {
+    .header h1 { font-size: 1.6rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .compare { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>YieldSage v2 Proposal</h1>
+  <p>From personal Telegram bot to Solana Risk Intelligence Platform. Always-on monitoring, team alerts, visual dashboard, comprehensive data.</p>
+  <div class="header-badges">
+    <span class="badge badge-green">Solana Focused</span>
+    <span class="badge badge-purple">Modal Serverless</span>
+    <span class="badge badge-blue">Next.js Dashboard</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- WHAT WE HAVE TODAY -->
+  <div class="section">
+    <h2>What We Have Today (v1)</h2>
+    <p>YieldSage v1 is a Telegram bot running on a local machine. It monitors Solana DeFi yields, tracks stablecoin prices, and sends alerts. Built over a weekend, iterated over 3 days.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3>Data Sources (9)</h3>
+        <ul>
+          <li><strong>DeFiLlama</strong> - 2700 pools + lending rates + stablecoin mcap + protocol TVL/fees/volume (7 endpoints)</li>
+          <li><strong>Jupiter Price API v3</strong> - 10 Solana stablecoin prices (30s)</li>
+          <li><strong>CoinGecko</strong> - fallback price source (11 stablecoins)</li>
+          <li><strong>Solana-yields scraper</strong> - 48 curated strategy APYs</li>
+          <li><strong>TwitterAPI.io</strong> - 16 security/protocol accounts</li>
+          <li><strong>Crypto News API</strong> - security + regulatory news</li>
+          <li><strong>Helius</strong> - wallet balances</li>
+          <li><strong>AllezLabs ClickHouse</strong> - Kamino transaction data</li>
+          <li><strong>Dune SIM</strong> - vault outflow monitoring</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Alert Types (9)</h3>
+        <ul>
+          <li>Stablecoin depeg (0.5% warning, 2% critical)</li>
+          <li>Lending utilization spike (>90%)</li>
+          <li>Stablecoin market cap drop (>5%)</li>
+          <li>Yield changes (TVL >$5M pools)</li>
+          <li>TVL drops (>20%, TVL >$1M)</li>
+          <li>Fee sustainability (0 revenue + high APY)</li>
+          <li>Stale data detection (per source)</li>
+          <li>Twitter security signals</li>
+          <li>News: exploit/hack detection</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Bot Commands (10)</h3>
+        <ul>
+          <li><code>/top</code> - Top yields with LLM risk analysis + utilization %</li>
+          <li><code>/strategies</code> - 48 curated with risk flags</li>
+          <li><code>/protocol</code> - Protocol health (TVL, age, fees, lending)</li>
+          <li><code>/kamino</code> - Kamino lending from ClickHouse</li>
+          <li><code>/propose</code> - AI yield allocation</li>
+          <li><code>/portfolio</code> - Wallet positions</li>
+          <li><code>/alerts</code> - Configure thresholds</li>
+          <li><code>/status</code> - Source health</li>
+          <li><code>/sources</code> - Monitored accounts</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Storage</h3>
+        <ul>
+          <li><strong>SQLite</strong> - local cache (pools, tweets, alerts, config)</li>
+          <li><strong>ClickHouse</strong> - 8 tables for long-term analytics (APY snapshots, prices, lending rates, protocol TVL/fees, alerts)</li>
+          <li><strong>48 curated strategies</strong> with qualitative risk data</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT'S MISSING -->
+  <div class="section">
+    <h2>What's Missing</h2>
+
+    <div class="compare">
+      <div class="compare-col current">
+        <h4>Current Limitations</h4>
+        <ul>
+          <li>Runs on a laptop (dies when lid closes)</li>
+          <li>Telegram only (no team visibility)</li>
+          <li>No visual dashboard (charts, trends)</li>
+          <li>Config via .env file (not user-friendly)</li>
+          <li>No freeze/blacklist event monitoring</li>
+          <li>No multisig governance tracking</li>
+          <li>No mint/burn event detection</li>
+          <li>No cross-signal correlation (Tier 1 incomplete)</li>
+          <li>No historical incident database</li>
+        </ul>
+      </div>
+      <div class="compare-col target">
+        <h4>v2 Target</h4>
+        <ul>
+          <li>Always-on (Modal serverless, 24/7)</li>
+          <li>Slack alerts for the team + Telegram for personal</li>
+          <li>Next.js dashboard with charts, protocol pages, alert history</li>
+          <li>Web UI for configuration</li>
+          <li>USDC/USDT freeze tracking (on-chain events)</li>
+          <li>Multisig monitoring (from solmultisig.com data)</li>
+          <li>Stablecoin mint/burn events</li>
+          <li>Correlator engine (multi-signal threat scoring)</li>
+          <li>Incident history (Drift, Resolv, etc.)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW DATA SOURCES -->
+  <div class="section">
+    <h2>Data Sources Plan</h2>
+    <p>Inspired by Pharos (25+ sources) and Solana Multisig Library, but scoped to Solana first.</p>
+
+    <table>
+      <tr><th>Source</th><th>Data</th><th>Status</th><th>Priority</th></tr>
+      <tr><td>DeFiLlama (7 endpoints)</td><td>Pools, TVL, lending rates, stablecoins, fees, volume, APY history</td><td><span class="tag tag-have">Have</span></td><td>-</td></tr>
+      <tr><td>Jupiter Price API v3</td><td>10 Solana stablecoin prices (30s)</td><td><span class="tag tag-have">Have</span></td><td>-</td></tr>
+      <tr><td>CoinGecko</td><td>11 stablecoin prices (fallback)</td><td><span class="tag tag-have">Have</span></td><td>-</td></tr>
+      <tr><td>Solana-yields scraper</td><td>48 curated strategy APYs</td><td><span class="tag tag-have">Have</span></td><td>-</td></tr>
+      <tr><td>AllezLabs ClickHouse</td><td>Kamino transactions (fully parsed)</td><td><span class="tag tag-have">Have</span></td><td>-</td></tr>
+      <tr><td>Dune SIM</td><td>Vault outflow monitoring (5 vaults)</td><td><span class="tag tag-have">Have</span></td><td>-</td></tr>
+      <tr><td>TwitterAPI.io</td><td>16 DeFi/security accounts</td><td><span class="tag tag-have">Have</span></td><td>-</td></tr>
+      <tr><td>Crypto News API</td><td>Security + regulatory news</td><td><span class="tag tag-have">Have</span></td><td>-</td></tr>
+      <tr><td>Helius</td><td>Wallet balances</td><td><span class="tag tag-have">Have</span></td><td>-</td></tr>
+      <tr><td>Solmultisig.com</td><td>Multisig structures for 16 Solana protocols (thresholds, members, roles)</td><td><span class="tag tag-add">To Add</span></td><td>High</td></tr>
+      <tr><td>CEX spot prices (Binance, Kraken)</td><td>Real market prices for depeg detection (more accurate than CoinGecko)</td><td><span class="tag tag-add">To Add</span></td><td>High</td></tr>
+      <tr><td>On-chain freeze/blacklist events</td><td>USDC, USDT freeze events on Solana (via Helius/RPC)</td><td><span class="tag tag-add">To Add</span></td><td>High</td></tr>
+      <tr><td>Stablecoin mint/burn events</td><td>Large mint/burn as supply signals (via Helius)</td><td><span class="tag tag-add">To Add</span></td><td>Medium</td></tr>
+      <tr><td>Pyth Network</td><td>Oracle prices + confidence intervals (oracle health)</td><td><span class="tag tag-add">To Add</span></td><td>Medium</td></tr>
+      <tr><td>DeFiLlama APY history</td><td>Backfill pool APY for curator performance tracking</td><td><span class="tag tag-add">To Add</span></td><td>Medium</td></tr>
+      <tr><td>Incident database</td><td>Historical exploits (Drift, Resolv, Mango, etc.) for pattern matching</td><td><span class="tag tag-new">New</span></td><td>Medium</td></tr>
+      <tr><td>Reserve composition APIs</td><td>What backs USDY, USDG, ONyc, etc.</td><td><span class="tag tag-later">Later</span></td><td>Low</td></tr>
+    </table>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div class="section">
+    <h2>Target Architecture</h2>
+
+    <div class="arch-diagram">
+      <div class="arch-label">Data Sources (14+)</div>
+      <div class="arch-row">
+        <div class="arch-box arch-green">DeFiLlama<br><small>7 endpoints</small></div>
+        <div class="arch-box arch-green">Jupiter + CoinGecko<br><small>prices 30s</small></div>
+        <div class="arch-box arch-green">ClickHouse<br><small>Kamino txns</small></div>
+        <div class="arch-box arch-green">Dune SIM<br><small>outflows 2min</small></div>
+        <div class="arch-box arch-green">Twitter + News<br><small>social signals</small></div>
+        <div class="arch-box arch-orange">CEX Prices<br><small>Binance/Kraken</small></div>
+        <div class="arch-box arch-orange">Helius Events<br><small>freeze/mint/burn</small></div>
+        <div class="arch-box arch-orange">Solmultisig<br><small>governance</small></div>
+        <div class="arch-box arch-orange">Pyth<br><small>oracle health</small></div>
+      </div>
+      <div class="arch-arrow">&darr;</div>
+      <div class="arch-label">Processing (Modal Serverless)</div>
+      <div class="arch-row">
+        <div class="arch-box arch-blue">Cron Jobs<br><small>15+ scheduled</small></div>
+        <div class="arch-box arch-blue">Trigger Engine<br><small>12+ alert types</small></div>
+        <div class="arch-box arch-blue">Correlator<br><small>threat scoring</small></div>
+        <div class="arch-box arch-blue">LLM Analysis<br><small>Gemini</small></div>
+        <div class="arch-box arch-blue">REST API<br><small>FastAPI</small></div>
+      </div>
+      <div class="arch-arrow">&darr;</div>
+      <div class="arch-label">Storage</div>
+      <div class="arch-row">
+        <div class="arch-box arch-purple">ClickHouse<br><small>all time-series + analytics</small></div>
+      </div>
+      <div class="arch-arrow">&darr;</div>
+      <div class="arch-label">Output</div>
+      <div class="arch-row">
+        <div class="arch-box arch-purple">Next.js Dashboard<br><small>Vercel</small></div>
+        <div class="arch-box arch-purple">Slack Alerts<br><small>team channel</small></div>
+        <div class="arch-box arch-purple">Telegram<br><small>personal</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PAGES -->
+  <div class="section">
+    <h2>Dashboard Pages</h2>
+    <p>Next.js frontend deployed on Vercel, querying the Modal API + ClickHouse directly.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3>Overview</h3>
+        <p>Real-time status of all monitored data. Source health indicators. Recent alerts timeline. Key metrics: total TVL tracked, stablecoin health, active alerts count.</p>
+      </div>
+      <div class="card">
+        <h3>Stablecoin Monitor</h3>
+        <p>All monitored stablecoins with live price, deviation from peg, market cap trend, 7d sparkline chart. Freeze/blacklist event log. Mint/burn activity. Inspired by Pharos' peg tracking.</p>
+      </div>
+      <div class="card">
+        <h3>Protocol Health</h3>
+        <p>Per-protocol page: TVL chart (30d), fees/revenue trend, lending markets with utilization heatmap, multisig structure (from solmultisig), Lindy score, risk assessment.</p>
+      </div>
+      <div class="card">
+        <h3>Yield Explorer</h3>
+        <p>Top pools by APY with risk zones (safe/caution/high/extreme). LLM risk comments. Filter by category, risk level, protocol. APY history charts per pool.</p>
+      </div>
+      <div class="card">
+        <h3>Curated Strategies</h3>
+        <p>The 48 curated stablecoin strategies with live APY, risk data, protocol health flags, yield sustainability flags. Compare mode. Links to deposit pages.</p>
+      </div>
+      <div class="card">
+        <h3>Alert History</h3>
+        <p>Full timeline of all alerts with filters by type, severity, protocol. Exportable. Charts: alerts per day, by type, by protocol. Alert configuration UI.</p>
+      </div>
+      <div class="card">
+        <h3>Multisig Governance</h3>
+        <p>All tracked Solana protocol multisigs. Current threshold, member count, roles. Change history (threshold changes, new members). Red flags on suspicious activity.</p>
+      </div>
+      <div class="card">
+        <h3>Settings</h3>
+        <p>Alert thresholds (depeg, utilization, TVL drop, etc.). Monitored protocols. Notification preferences (Slack/Telegram). API keys management.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPLEMENTATION PHASES -->
+  <div class="section">
+    <h2>Implementation Roadmap</h2>
+    <p>Incremental delivery. Each phase is usable independently.</p>
+
+    <div class="phase">
+      <div class="phase-num">Phase 1</div>
+      <h3>Modal Deployment + Slack</h3>
+      <div class="phase-timeline">1-2 days</div>
+      <p>Move YieldSage engine to Modal. Replace SQLite with ClickHouse for all state. Add Slack webhook for team alerts. The bot runs 24/7 without a laptop.</p>
+      <ul>
+        <li>Wrap all jobs in <code>@modal.function</code> with <code>modal.Cron</code></li>
+        <li>Secrets via <code>modal.Secret</code></li>
+        <li>Slack webhook dispatcher (severity filtering: only warning/critical)</li>
+        <li>Keep Telegram as personal fallback</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">Phase 2</div>
+      <h3>REST API</h3>
+      <div class="phase-timeline">1-2 days</div>
+      <p>Expose YieldSage data via FastAPI on Modal. This is what the dashboard will consume.</p>
+      <ul>
+        <li><code>/api/status</code> - source health</li>
+        <li><code>/api/pools</code> - top pools with risk data</li>
+        <li><code>/api/strategies</code> - 48 curated enriched</li>
+        <li><code>/api/protocol/{name}</code> - protocol health</li>
+        <li><code>/api/stablecoins</code> - prices + mcap + depeg status</li>
+        <li><code>/api/alerts</code> - history from ClickHouse</li>
+        <li><code>/api/charts/{type}/{id}</code> - time-series for charts</li>
+        <li><code>/api/config</code> - read/write alert thresholds</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">Phase 3</div>
+      <h3>Dashboard MVP</h3>
+      <div class="phase-timeline">2-3 days</div>
+      <p>Next.js frontend on Vercel. Overview + Stablecoin Monitor + Protocol Health + Alert History. Clean, dark UI.</p>
+      <ul>
+        <li>Next.js 14+ with App Router</li>
+        <li>Tailwind + shadcn/ui</li>
+        <li>TanStack Query for data fetching</li>
+        <li>Recharts for time-series</li>
+        <li>4 pages: Overview, Stablecoins, Protocols, Alerts</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">Phase 4</div>
+      <h3>New Data Sources</h3>
+      <div class="phase-timeline">3-5 days</div>
+      <p>Add the high-value sources we're missing.</p>
+      <ul>
+        <li><strong>Solmultisig data</strong> - scrape/API for 16 protocol multisig structures</li>
+        <li><strong>CEX prices</strong> - Binance/Kraken websocket or REST for real market prices</li>
+        <li><strong>Freeze/blacklist events</strong> - Helius webhook on USDC/USDT program for freeze instructions</li>
+        <li><strong>Mint/burn events</strong> - Helius webhook on stablecoin mint authorities</li>
+        <li><strong>Pyth oracle health</strong> - confidence intervals, staleness detection</li>
+        <li><strong>APY history backfill</strong> - DeFiLlama /chart/{pool_id} for curator tracking</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">Phase 5</div>
+      <h3>Advanced Features</h3>
+      <div class="phase-timeline">Ongoing</div>
+      <p>The features that require the data foundation to be solid first.</p>
+      <ul>
+        <li><strong>Correlator engine</strong> - cross-signal threat scoring (depeg + TVL drop + tweet = critical)</li>
+        <li><strong>Curator performance</strong> - Sharpe ratio, APY volatility, reaction time per curator</li>
+        <li><strong>Automated incident reports</strong> - LLM-generated reports on critical events</li>
+        <li><strong>Historical pattern detection</strong> - match incoming signals to known exploit patterns</li>
+        <li><strong>Risk Score framework</strong> - 6-dimension scoring (Lindyness, dependency, liquidity, oracle, audit, yield source)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- COST -->
+  <div class="section">
+    <h2>Estimated Costs</h2>
+    <table>
+      <tr><th>Service</th><th>Monthly Cost</th><th>Notes</th></tr>
+      <tr><td>Modal</td><td>$0-30</td><td>Free tier covers light cron jobs. Scales with usage.</td></tr>
+      <tr><td>Vercel</td><td>$0</td><td>Free tier for Next.js dashboard</td></tr>
+      <tr><td>ClickHouse</td><td>$0</td><td>Already running (AllezLabs infra)</td></tr>
+      <tr><td>DeFiLlama</td><td>$0</td><td>All free endpoints</td></tr>
+      <tr><td>Jupiter API</td><td>$0</td><td>AllezLabs key</td></tr>
+      <tr><td>Dune SIM</td><td>$0</td><td>500k events/mo free</td></tr>
+      <tr><td>TwitterAPI.io</td><td>$1-2</td><td>~$0.15/1k tweets</td></tr>
+      <tr><td>LLM (Gemini)</td><td>$0-5</td><td>Free tier + pay-as-you-go</td></tr>
+      <tr><td>Helius</td><td>$0</td><td>Free tier (100k credits)</td></tr>
+      <tr><td><strong>Total</strong></td><td><strong>$1-37/mo</strong></td><td></td></tr>
+    </table>
+  </div>
+
+  <!-- WHAT WE DON'T DO (yet) -->
+  <div class="section">
+    <h2>Out of Scope (for now)</h2>
+    <p>These are valuable but not needed for v2 Solana-focused scope:</p>
+    <ul>
+      <li><strong>EVM/multi-chain monitoring</strong> - Venus (BNB) stays in the separate SPE-90 alerting system</li>
+      <li><strong>FX/commodity prices</strong> - not relevant for Solana DeFi</li>
+      <li><strong>Reserve composition deep dive</strong> - complex, protocol-specific, needs legal context</li>
+      <li><strong>Autonomous execution</strong> - we stay advisory-only, no auto-rebalancing</li>
+      <li><strong>Public-facing product</strong> - internal tool first, polish later if we decide to go public</li>
+      <li><strong>The Graph subgraphs</strong> - EVM-specific, not needed for Solana</li>
+    </ul>
+  </div>
+
+  <!-- OPEN QUESTIONS -->
+  <div class="section">
+    <h2>Open Questions for the Team</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Scope:</strong> Internal AllezLabs tool only, or potential to share with clients (Venus, Kamino)?</li>
+        <li><strong>Dashboard auth:</strong> Simple password, or proper auth (Google SSO, etc.)?</li>
+        <li><strong>Slack channel:</strong> Dedicated #yieldsage-alerts channel, or integrate into existing channels?</li>
+        <li><strong>Protocol priority:</strong> Start with which protocols? Kamino + Jupiter + Drift seem obvious.</li>
+        <li><strong>Collaboration:</strong> Jan/Alex offered to help scope. Schedule a design session?</li>
+        <li><strong>Pharos fork:</strong> Fork their frontend as starting point, or build from scratch with our own design?</li>
+        <li><strong>Naming:</strong> Keep "YieldSage" or rebrand for the team tool?</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  YieldSage v2 Proposal &mdash; AllezLabs Engineering &mdash; April 2026<br>
+  Prepared by Thomas Fevre
+</div>
+
+</body>
+</html>
